@@ -1,0 +1,8 @@
+"foo"                                 // String, primitive
+3.1415                                // Number, primitive
+[ 'a', 'b', 'c' ]                     // Array, object, not primitive
+false                                 // Boolean, primitive
+foo                                   // Variable, not primitive
+function bar() { return "bar"; }      // Object, not primitive
+undefined                             // primitive
+{ a: 1, b: 2 }                        // Object, not primitive
