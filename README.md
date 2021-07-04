@@ -1,3 +1,3 @@
-# launchschool-prep
+# Launch School Javascript
 
 edited
