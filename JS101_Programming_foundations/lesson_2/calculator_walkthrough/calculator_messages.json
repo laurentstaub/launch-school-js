@@ -1,0 +1,26 @@
+{
+  "en" : {
+    "language" : "To choose English, please type 'en'",
+    "notValidLanguage" : "Must choose between 'en' and 'fr'",
+    "welcome" : "Welcome to Calculator!",
+    "firstNumber" : "What's the first number?",
+    "secondNumber" : "What's the second number?",
+    "notValidNumber" : "Hmm... that doesn't look like a valid number.",
+    "operationChoice" : 
+      "What operation would you like to perform?\n1) Add 2) Substract 3) Multiply 4) Divide",
+    "wrongChoice" : "Must choose 1, 2, 3 or 4",
+    "otherCalculation" : "Would you like to perform another calculation (y/n)?"
+  },
+  "fr" : {
+    "language" : "Pour choisir le français, merci d'entrer 'fr'",
+    "notValidLanguage" : "Vous devez choisir entre 'en' et 'fr'",
+    "welcome" : "Bienvenue dans la Calculatrice!",
+    "firstNumber" : "Quel est votre premier chiffre?",
+    "secondNumber" : "Quel est votre second chiffre?",
+    "notValidNumber" : "Hmm... ce n'est pas un chiffre valide.",
+    "operationChoice" : 
+      "Quelle opération souhaitez-vous réaliser?\n1) Additioner 2) Soustraire 3) Multiplier 4) Diviser",
+    "wrongChoice" : "Vous devez choisir 1, 2, 3 ou 4",
+    "otherCalculation" : "Souhaitez-vous effectuer une autre opération (y/n)?"
+  }
+}
