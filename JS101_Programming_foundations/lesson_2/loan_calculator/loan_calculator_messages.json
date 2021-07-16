@@ -1,0 +1,8 @@
+{
+  "welcome" : "Welcome to the Loan monthly payment Calculator.",
+  "borrowingAmount" : "What amount do you want to borrow?",
+  "inputNumber" : "Please input a positive number",
+  "interestRate" : "What is your annual interest rate?",
+  "interestIndication" : "Please do not enter the unit. Example: Enter 5 for 5%",
+  "loanDuration" : "What is your loan duration in years?"
+}
