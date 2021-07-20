@@ -14,9 +14,9 @@ let integer = Number(readline.question(
   'Please enter an integer greater than 0: '
 ));
 
-let operation = Number(readline.question(
+let operation = readline.question(
   'Enter "s" to compute the sum, or "p" to compute the product. '
-));
+);
 
 if (operation === "s") {
   let sum = 0;
