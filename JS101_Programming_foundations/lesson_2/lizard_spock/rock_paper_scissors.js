@@ -1,13 +1,13 @@
 const readline = require('readline-sync');
-const VALID_CHOICES = ['r', 'p', 's', 'l', 'k'];
-const FULL_NAME_CHOICES = ['rock', 'paper', 'scissors', 'lizard', 'spock'];
-const WINNING_CHOICES = {
-  rock: ['scissors', 'lizard'],
-  paper: ['rock', 'spock'],
-  scissors: ['paper', 'lizard'],
-  lizard: ['spock', 'paper'],
-  spock: ['scissors', 'rock']
+
+const CHOICES = {
+  r: { long: 'rock', wins: ['scissors', 'lizard'] },
+  p: { long: 'paper', wins: ['rock', 'spock'] },
+  s: { long: 'scissors', wins: ['paper', 'lizard'] },
+  l: { long: 'lizard', wins: ['spock', 'paper'] },
+  k: { long: 'spock', wins: ['scissors', 'rock'] }
 };
+
 const WINNING_SETS = 3;
 const SCORE = {
   user: 0,
@@ -18,22 +18,22 @@ function prompt(message) {
   console.log(`=> ${message}`);
 }
 
-function displayWinner(choice, computerChoice) {
-  prompt(`You chose ${choice}, computer chose ${computerChoice}`);
+function displayWinner(shortChoice, computerChoice) {
+  prompt(`You chose ${CHOICES[shortChoice].long}, computer chose ${computerChoice}`);
 
-  if (WINNING_CHOICES[choice].includes(computerChoice)) {
+  if (CHOICES[shortChoice].wins.includes(computerChoice)) {
     prompt('You win!');
-  } else if (choice === computerChoice) {
+  } else if (CHOICES[shortChoice].long === computerChoice) {
     prompt("It's a tie");
   } else {
     prompt("Computer wins!");
   }
 }
 
-function updateScore(choice, computerChoice) {
-  if (WINNING_CHOICES[choice].includes(computerChoice)) {
+function updateScore(shortChoice, computerChoice) {
+  if (CHOICES[shortChoice].wins.includes(computerChoice)) {
     SCORE.user += 1;
-  } else if (choice !== computerChoice) {
+  } else if (CHOICES[shortChoice].long !== computerChoice) {
     SCORE.computer += 1;
   }
 }
@@ -77,17 +77,18 @@ do {
 ------------------------------------
 Turn ${turn}. Your choice: r, p, s, l or k`));
 
-    while (!VALID_CHOICES.includes(shortChoice)) {
+    while (!(shortChoice in CHOICES)) {
       shortChoice = readline.question(prompt("That's not a valid choice"));
     }
 
-    let choice = FULL_NAME_CHOICES[VALID_CHOICES.indexOf(shortChoice)];
-    let randomIndex = Math.floor(Math.random() * FULL_NAME_CHOICES.length);
-    let computerChoice = FULL_NAME_CHOICES[randomIndex];
+    // we chose a random choice for the computer
+    let randomIndex = Math.floor(Math.random() * Object.keys(CHOICES).length);
+    let computerChoiceShort = Object.keys(CHOICES)[randomIndex];
+    let computerChoice = CHOICES[computerChoiceShort].long;
     turn += 1;
 
-    displayWinner(choice, computerChoice);
-    updateScore(choice, computerChoice);
+    displayWinner(shortChoice, computerChoice);
+    updateScore(shortChoice, computerChoice);
     prompt(`
 
       -----------------------
@@ -105,8 +106,8 @@ Turn ${turn}. Your choice: r, p, s, l or k`));
 
   while (answerContinue[0] !== 'n' && answerContinue[0] !== 'y') {
     answerContinue = readline
-      .question()
-      .toLowerCase(prompt('Please enter "y" or "n".'));
+      .question(prompt('Please enter "y" or "n".'))
+      .toLowerCase();
   }
 
 } while (answerContinue[0] === 'y');
