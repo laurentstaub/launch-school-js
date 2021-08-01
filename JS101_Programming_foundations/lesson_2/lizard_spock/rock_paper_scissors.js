@@ -31,7 +31,6 @@ function displayWinner(choice, computerChoice) {
 }
 
 function updateScore(choice, computerChoice) {
-
   if (WINNING_CHOICES[choice].includes(computerChoice)) {
     SCORE.user += 1;
   } else if (choice !== computerChoice) {
@@ -58,7 +57,7 @@ __   __                                _
 let answerContinue = 'n';
 
 do {
-  // We clean-up to prepare for the game start
+  // We clean-up to prepare for the series start
   console.clear();
   SCORE.user = 0;
   SCORE.computer = 0;
@@ -73,7 +72,6 @@ do {
   prompt(`Series is best of 5 games, first to 3 wins.`);
 
   do {
-
     let shortChoice = readline.question(console.log(`
 
 ------------------------------------
@@ -106,7 +104,6 @@ Turn ${turn}. Your choice: r, p, s, l or k`));
     .toLowerCase();
 
   while (answerContinue[0] !== 'n' && answerContinue[0] !== 'y') {
-
     answerContinue = readline
       .question()
       .toLowerCase(prompt('Please enter "y" or "n".'));
