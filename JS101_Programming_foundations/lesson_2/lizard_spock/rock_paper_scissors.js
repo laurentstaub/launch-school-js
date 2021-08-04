@@ -1,5 +1,21 @@
 const readline = require('readline-sync');
+const RULES = `==== ROCK / PAPER / SCISSORS / LIZARD / SPOCK ====
 
+  Choose one: 
+            (r) for rock 
+            (p) for paper
+            (s) for scissors
+            (l) for lizard
+            (k) for spock
+
+  And remember that:
+  Scissors decapitate Scissors cuts paper, paper covers rock, rock crushes
+  lizard, lizard poisons Spock, Spock smashes scissors, scissors decapitates
+  lizard, lizard eats paper, paper disproves Spock, Spock vaporizes rock, and as
+  it always has, rock crushes scissors.
+  -------------------------------------------
+  Series is best of 5 games, first to 3 wins.
+`;
 const CHOICES = {
   r: { long: 'rock', wins: ['scissors', 'lizard'] },
   p: { long: 'paper', wins: ['rock', 'spock'] },
@@ -7,23 +23,36 @@ const CHOICES = {
   l: { long: 'lizard', wins: ['spock', 'paper'] },
   k: { long: 'spock', wins: ['scissors', 'rock'] }
 };
-
 const WINNING_SETS = 3;
-const SCORE = {
-  user: 0,
-  computer: 0
-};
+const SCORE = { user: 0, computer: 0 };
+const VALID_YES_NO = ['y', 'n', 'yes', 'no'];
 
 function prompt(message) {
   console.log(`=> ${message}`);
 }
 
-function displayWinner(shortChoice, computerChoice) {
-  prompt(`You chose ${CHOICES[shortChoice].long}, computer chose ${computerChoice}`);
+function getPlayerChoice(turn) {
+  let shortChoice = readline.question(console.log(`
+  ----------------------------------------------------------------------------
+  Turn ${turn}. Your choice: (r)ock, (p)aper, (s)cissors, (l)izard or spoc(k)`));
 
-  if (CHOICES[shortChoice].wins.includes(computerChoice)) {
+  shortChoice = convertLongToShortChoice(shortChoice);
+
+  while (!(shortChoice in CHOICES)) {
+    shortChoice = readline.question(prompt("That's not a valid choice"));
+    shortChoice = convertLongToShortChoice(shortChoice);
+  }
+
+  return shortChoice;
+}
+
+function displayWinner(shortChoice, computerChoice) {
+  let choiceKey = CHOICES[shortChoice];
+  prompt(`You chose ${choiceKey.long}, computer chose ${computerChoice}`);
+
+  if (choiceKey.wins.includes(computerChoice)) {
     prompt('You win!');
-  } else if (CHOICES[shortChoice].long === computerChoice) {
+  } else if (choiceKey.long === computerChoice) {
     prompt("It's a tie");
   } else {
     prompt("Computer wins!");
@@ -54,34 +83,47 @@ __   __                                _
   }
 }
 
-let answerContinue = 'n';
-
-do {
-  // We clean-up to prepare for the series start
-  console.clear();
+function resetScore() {
   SCORE.user = 0;
   SCORE.computer = 0;
+}
+
+// It checks if player entered the full name of the play (rock, paper,...)
+// If it is the case, we return the short equivalent
+function convertLongToShortChoice(string) {
+  if (string.length !== 1) {
+    if (Object.keys(CHOICES).includes(string[0])) {
+      if (string === CHOICES[string[0]].long) {
+        string = string[0];
+        return string;
+      }
+    }
+  }
+  return string;
+}
+
+function playAgain(displayText) {
+  let goOn = readline.question(prompt(displayText));
+  while (!VALID_YES_NO.includes(goOn)) {
+    goOn = readline.question(prompt('Please enter "y" or "n".')).toLowerCase();
+  }
+  return goOn[0] === 'y';
+}
+
+do {
+  resetScore();
   let turn = 1;
-  prompt(`==== ROCK / PAPER / SCISSORS / LIZARD / SPOCK ====`);
-  prompt(`Choose one: 
-              (r) for rock 
-              (p) for paper
-              (s) for scissors
-              (l) for lizard
-              (k) for spock`);
-  prompt(`Series is best of 5 games, first to 3 wins.`);
 
   do {
-    let shortChoice = readline.question(console.log(`
+    console.clear();
+    prompt(` ${RULES}
+    -----------------------
+    PLAYER: ${SCORE.user} / COMPUTER: ${SCORE.computer}
+    -----------------------
+  `);
 
-------------------------------------
-Turn ${turn}. Your choice: r, p, s, l or k`));
+    let shortChoice = getPlayerChoice(turn);
 
-    while (!(shortChoice in CHOICES)) {
-      shortChoice = readline.question(prompt("That's not a valid choice"));
-    }
-
-    // we chose a random choice for the computer
     let randomIndex = Math.floor(Math.random() * Object.keys(CHOICES).length);
     let computerChoiceShort = Object.keys(CHOICES)[randomIndex];
     let computerChoice = CHOICES[computerChoiceShort].long;
@@ -89,25 +131,12 @@ Turn ${turn}. Your choice: r, p, s, l or k`));
 
     displayWinner(shortChoice, computerChoice);
     updateScore(shortChoice, computerChoice);
-    prompt(`
 
-      -----------------------
-      PLAYER: ${SCORE.user} / COMPUTER: ${SCORE.computer}
-      -----------------------
-    `);
-
-  } while (SCORE.user < WINNING_SETS && SCORE.computer < WINNING_SETS);
+  } while ((SCORE.user < WINNING_SETS && SCORE.computer < WINNING_SETS) &&
+            playAgain('Do you want to continue (y/n)?'));
 
   displaySeriesWinner(SCORE.user, SCORE.computer);
 
-  answerContinue = readline
-    .question(prompt('Do you want to play again (y/n)?'))
-    .toLowerCase();
+} while (playAgain('Do you want to play another series (y/n)?'));
 
-  while (answerContinue[0] !== 'n' && answerContinue[0] !== 'y') {
-    answerContinue = readline
-      .question(prompt('Please enter "y" or "n".'))
-      .toLowerCase();
-  }
-
-} while (answerContinue[0] === 'y');
+prompt(`Thanks for playing!`);
