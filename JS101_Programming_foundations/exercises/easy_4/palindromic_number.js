@@ -12,9 +12,21 @@ isPalindromicNumber(5);            // true
 
 */
 
-function isPalindromicNumber(number) {
-  string = number.toString(8);
-  return string === string.split('').reverse().join('');
+function isPalindromicNumber(num) {
+  if (isDecimal(num)) {
+    return isPalindrome(String(num));
+  } else {
+    let cleanNum = num.toString(8);
+    return isPalindrome(cleanNum);
+  }
+}
+
+function isDecimal(num) {
+  return num === parseInt(num, 10);
+}
+
+function isPalindrome(str) {
+  return str === str.split('').reverse().join('');
 }
 
 console.log(isPalindromicNumber(00034543));        // true

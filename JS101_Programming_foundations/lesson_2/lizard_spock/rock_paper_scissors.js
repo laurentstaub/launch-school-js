@@ -36,7 +36,7 @@ function getPlayerChoice(turn) {
   ----------------------------------------------------------------------------
   Turn ${turn}. Your choice: (r)ock, (p)aper, (s)cissors, (l)izard or spoc(k)`));
 
-  shortChoice = convertLongToShortChoice(shortChoice);
+  shortChoice = convertLongToShortChoice(shortChoice.toLowerCase());
 
   while (!(shortChoice in CHOICES)) {
     shortChoice = readline.question(prompt("That's not a valid choice"));
@@ -68,7 +68,7 @@ function updateScore(shortChoice, computerChoice) {
 }
 
 function displaySeriesWinner(userScore) {
-  if (userScore === 3) {
+  if (userScore === WINNING_SETS) {
     prompt(`
 Congratulations, you won ${SCORE.user} to ${SCORE.computer}!
 __   __                                _ 
@@ -103,7 +103,7 @@ function convertLongToShortChoice(string) {
 }
 
 function playAgain(displayText) {
-  let goOn = readline.question(prompt(displayText));
+  let goOn = readline.question(prompt(displayText)).toLowerCase();
   while (!VALID_YES_NO.includes(goOn)) {
     goOn = readline.question(prompt('Please enter "y" or "n".')).toLowerCase();
   }
@@ -127,6 +127,7 @@ do {
     let randomIndex = Math.floor(Math.random() * Object.keys(CHOICES).length);
     let computerChoiceShort = Object.keys(CHOICES)[randomIndex];
     let computerChoice = CHOICES[computerChoiceShort].long;
+
     turn += 1;
 
     displayWinner(shortChoice, computerChoice);
