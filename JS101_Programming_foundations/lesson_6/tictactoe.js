@@ -170,6 +170,17 @@ function detectWinner(board) {
   return null;
 }
 
+function playAgain(question) {
+  prompt(question);
+  let answer = readline.question().toLowerCase();
+  while (!VALID_YES_OR_NO.includes(answer)) {
+    prompt('Please input a valid answer: "y" for yes, or "n" for no');
+    answer = readline.question().toLowerCase();
+  }
+
+  return answer;
+}
+
 while (true) {
   let playerScore = 0;
   let computerScore = 0;
@@ -217,22 +228,12 @@ while (true) {
       break;
     }
 
-    prompt('Would you like to play again? y/n');
-    let answer = readline.question().toLowerCase();
-    while (!VALID_YES_OR_NO.includes(answer)) {
-      prompt('Please input a valid answer: "y" for yes, or "n" for no');
-      answer = readline.question().toLowerCase();
-    }
+    let answer = playAgain('Do you want to continue? y/n');
     if (answer !== 'y') break;
   }
 
-  prompt(`Would you like to start a new match (first to ${WINNING_GAMES})? y/n`);
-  let answer = readline.question().toLowerCase();
-  while (!VALID_YES_OR_NO.includes(answer)) {
-    prompt('Please input a valid answer: "y" for yes, or "n" for no');
-    answer = readline.question().toLowerCase();
-  }
-  if (answer !== 'y') break;
+  let answerMatch = playAgain(`Do you want to start a new match(first to ${WINNING_GAMES})? y/n`);
+  if (answerMatch !== 'y') break;
 }
 
 prompt('Thanks for playing Tic Tac Toe!');
