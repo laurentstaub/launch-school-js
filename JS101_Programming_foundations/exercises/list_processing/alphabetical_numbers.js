@@ -20,14 +20,15 @@ DATA STRUCTURE
 We sort directy from the indexes of the alphanumrical numbers array.
 
 */
-
-const ALPHA_NUMBERS = [
-  zero, one, two, three, four, five, six, seven, eight, nine, ten, eleven, twelve, thirteen, fourteen, fifteen, sixteen, seventeen, eighteen, nineteen
-];
+const NUMBERS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
 
 function alphabetical(numbersArray) {
-  let sortedNumbers = [];
-
-  
+  return numbersArray
+    .map(element => NUMBERS[element])
+    .sort()
+    .map(element => NUMBERS.indexOf(element));
 }
+
+console.log(alphabetical([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]));
+console.log(alphabetical([0, 5]));
 
