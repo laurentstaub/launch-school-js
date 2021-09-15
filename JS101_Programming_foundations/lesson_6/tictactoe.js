@@ -237,7 +237,9 @@ function playAgain(question) {
   return answer;
 }
 
-while (true) {
+let answerMatch = 'y';
+
+do {
   let firstPlayer = FIRST_PLAYER_MODE;
   let answer = 'y';
 
@@ -272,8 +274,7 @@ while (true) {
     answer = playAgain('Do you want to continue? y/n');
   } while (answer === 'y');
 
-  let answerMatch = playAgain(`Do you want to start a new match (first to ${WINNING_GAMES})? y/n`);
-  if (answerMatch !== 'y') break;
-}
+  answerMatch = playAgain(`Do you want to start a new match (first to ${WINNING_GAMES})? y/n`);
+} while (answerMatch === 'y');
 
 prompt('Thanks for playing Tic Tac Toe!');
