@@ -2,7 +2,8 @@
 const readline = require('readline-sync');
 
 const FIRST_PLAYER_MODES = { p: "player", c: "computer", h: "choose", r: "random"};
-const FIRST_PLAYER_MODE = 'choose';
+const PLAYERS = ["player", "computer"]
+const FIRST_PLAYER_MODE = 'random';
 const VALID_YES_OR_NO = ['y', 'yes', 'n', 'no'];
 
 const INITIAL_MARK = ' ';
@@ -51,6 +52,11 @@ function joinOr(array, separator1 = ", ", separator2 = "or") {
 function displayBoard(board) {
   console.clear();
 
+  console.log(`
+*************** TIC TAC TOE *****************
+  
+Winner is the first to win ${WINNING_GAMES} games.`);
+  console.log(`First player mode is ${FIRST_PLAYER_MODE}.`)
   console.log(`You are ${HUMAN_MARK}. Computer is ${COMPUTER_MARK}.`);
 
   console.log(`
@@ -66,6 +72,14 @@ function displayBoard(board) {
     ${board['7']}  |  ${board['8']}  |  ${board['9']}  
        |     |
   `);
+}
+
+function welcomePlayer() {
+  console.log(`
+  *************** TIC TAC TOE *****************
+  
+  Welcome to Tic Tac Toe. The winner will the first to win ${WINNING_GAMES} games
+      `);
 }
 
 function initializeBoard() {
@@ -156,7 +170,6 @@ function someoneWon(board) {
 
 function detectWinner(board) {
   for (let line = 0; line < WINNING_LINES.length; line++) {
-
     if (WINNING_LINES[line].every(nb => board[nb] === HUMAN_MARK)) {
       return 'Player';
     } else if (WINNING_LINES[line].every(nb => board[nb] === COMPUTER_MARK)) {
@@ -230,14 +243,13 @@ while (true) {
 
   do {
     console.clear();
-    console.log(`
-*************** TIC TAC TOE *****************
-
-Welcome to Tic Tac Toe. The winner will the first to win ${WINNING_GAMES} games
-    `);
+    welcomePlayer();
     let board = initializeBoard();
+
     if (FIRST_PLAYER_MODE === "choose") {
       firstPlayer = chooseFirstPlayer();
+    } else if (FIRST_PLAYER_MODE === "random") {
+      firstPlayer = PLAYERS[Math.floor(Math.random() * PLAYERS.length)];
     }
     let currentPlayer = firstPlayer;
 
