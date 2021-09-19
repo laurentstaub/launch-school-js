@@ -1,10 +1,9 @@
-
-// [['H', '2'], ['S', 'J'], ['D', 'A']]
 const readline = require('readline-sync');
 
 const CARD_VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-const SUITS = ['S', 'H', 'D', 'C'];
-const FULL_SUITS = ['♠', '♥', '♦', '♣'];
+const SUITS = ['♠', '♥', '♦', '♣'];
+const GAME_BUST = 21;
+const DEALER_LIMIT = 17;
 
 function prompt(text) {
   console.log(`=> ${text}`);
@@ -41,100 +40,101 @@ function dealTwoCards(deck) {
 
 function formatCards(cards) {
   return cards
-    .map(card => {
-      return card[1] + ' of ' + FULL_SUITS[SUITS.indexOf(card[0])];
-    })
-    .join(', ');
+    .map(array => array.join(' '))
+    .join(' / ');
 }
 
-function busted(cards) {
-  return total(cards) > 21;
+function displayPlayerDealerCards(playerCards, dealerCards) {
+  console.log(`
+Dealer has: ${formatCards([dealerCards[dealerCards.length - 1]])} and a mystery card
+You have: ${formatCards(playerCards)}
+  `);
+}
+
+function displayHandAfterHit(cards, play) {
+  if (play === 'h') {
+    console.log(`
+You hit a ${formatCards([cards[cards.length - 1]])}
+Your hand is now:  ${formatCards(cards)}
+  `);
+  } else {
+    console.log(`
+Dealer hits a ${formatCards([cards[cards.length - 1]])}
+Dealer hand is now: ${formatCards(cards)}
+      `);
+  }
+}
+
+function busted(totalPlayer) {
+  return totalPlayer > GAME_BUST;
 }
 
 function total(cards) {
   let values = cards.map(card => card[1]);
-
   let total = 0;
+
   values.forEach(value => {
-    if (value === 'A') {
-      total += 11;
-    } else if (['J', 'Q', 'K'].includes(value)) {
-      total += 10;
-    } else {
-      total += Number(value);
-    }
+    if (value === 'A') total += 11;
+    else if (['J', 'Q', 'K'].includes(value)) total += 10;
+    else total += Number(value);
   });
 
   values.filter(value => value === 'A').forEach(_ => {
-    if (total > 21) total -= 10;
+    if (total > GAME_BUST) total -= 10;
   });
 
   return total;
 }
 
-console.log(`Welcome to Twenty-One!`);
-let deck = createShuffledDeck();
+function displayResult(totalPlayer, totalDealer) {
+  if (totalPlayer > GAME_BUST) prompt('Busted, you lose');
+  else if (totalDealer > GAME_BUST) prompt('Dealer busted, you win');
+  else if (totalDealer < totalPlayer)prompt ('You won');
+  else if (totalDealer > totalPlayer)prompt ('Dealer won');
+  else prompt("It's a tie");
+}
 
-let dealerCards = dealTwoCards(deck);
-let playerCards = dealTwoCards(deck);
-
-console.log(`
-Dealer has: ${formatCards([dealerCards[dealerCards.length - 1]])} and a mystery card
-You have: ${formatCards(playerCards)}
-`);
-
-let play = 'h';
+function playAgain() {
+  let answer = readline.question('=> Do you want to play again (y/n)? ');
+  return answer.toLowerCase()[0] === 'y';
+}
 
 do {
-  
+  console.clear;
+  prompt(`Welcome to Twenty-One!`);
+  let deck = createShuffledDeck();
+  let play;
+  let playerCards = dealTwoCards(deck);
+  let dealerCards = dealTwoCards(deck);
+  let totalPlayer = total(playerCards);
+  let totalDealer = total(dealerCards);
+  displayPlayerDealerCards(playerCards, dealerCards);
+
   do {
     do {
-      prompt(`Do you want to (h)it or (s)tay?`)
-      play = readline.question().toLowerCase();
+      play = readline.question('=> Do you (h)it or (s)tay? ').toLowerCase();
 
       if (play !== 'h' && play !== 's') {
         prompt("You must enter 'h' or 's'");
       }
-    } while (play !== 'h' && play !== 's')
+    } while (play !== 'h' && play !== 's');
 
     if (play === 'h') {
       playerCards.push(dealOneCard(deck));
-      prompt(`
-You hit a ${formatCards([playerCards[playerCards.length - 1]])}
-Your hand is now:  ${formatCards(playerCards)}
-    `);
+      displayHandAfterHit(playerCards, play);
+      totalPlayer = total(playerCards);
     }
-  } while (play === 'h');
+  } while (play === 'h' && !busted(totalPlayer));
 
-} while (play !== 's' && busted(playerCards));
+  if (play === 's') {
+    prompt(`You stayed at a total of ${total(playerCards)} points.`);
+  }
 
-if (busted(playerCards)) {}
+  while (totalDealer < DEALER_LIMIT && !busted(totalPlayer)) {
+    dealerCards.push(dealOneCard(deck));
+    displayHandAfterHit(dealerCards, play);
+    totalDealer = total(dealerCards);
+  }
 
-
-/*
-1. Initialize deck
-2. Deal cards to player and dealer
-3. Player turn: hit or stay
-   - repeat until bust or stay
-4. If player bust, dealer wins.
-5. Dealer turn: hit or stay
-   - repeat until total >= 17
-6. If dealer busts, player wins.
-7. Compare cards and declare winner.
-
-Dealer has: 7 and unknown card
-You have: 10 and 7
-
-if (busted()) {
-
-} else {
-  console.log("You chose to stay!");
-}
-
-while (true) {
-  console.log("hit or stay?");
-  let answer = readline.question();
-  if (answer === 'stay' || busted()) break;
-}
-*/
-
+  displayResult(totalPlayer, totalDealer);
+} while (playAgain());
