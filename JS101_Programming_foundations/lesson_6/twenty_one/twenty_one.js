@@ -95,13 +95,11 @@ function displayFullCard(card) {
   return (cardArray);
 }
 
-function formatFullCards(cards, who) {
+function formatFullCards(cards, who, play) {
   let cardsArray;
   // to display the first hand of the dealer
-  if (cards.length === 2 && who === 'dealer') {
-    cardsArray = [];
-    cardsArray[0] = displayFullCard(cards[0]);
-    cardsArray[1] = MYSTERY_CARD;
+  if (cards.length === 2 && who === 'dealer' && play !== 's') {
+    cardsArray = [displayFullCard(cards[0]), MYSTERY_CARD];
   } else {
     cardsArray = cards.map(card => displayFullCard(card));
   }
@@ -109,7 +107,6 @@ function formatFullCards(cards, who) {
   // we consolidate all the cards in a single array for display
   let displayArray = [];
   if (cardsArray.length === 0) return displayArray;
-
   cardsArray[0].forEach(_ => displayArray.push([]));
 
   for (let index = 0; index < cardsArray[0].length; index += 1) {
@@ -119,29 +116,22 @@ function formatFullCards(cards, who) {
   return displayArray.map(subArray => subArray.join(''));
 }
 
-function displayFullCards(cards, who) {
-  let handArray = formatFullCards(cards, who);
+function displayFullCards(cards, who, play) {
+  let handArray = formatFullCards(cards, who, play);
   handArray.forEach(element => console.log(element));
 }
 
-function displayPlayerDealerCards(playerCards, dealerCards) {
-  console.log(`
-Dealer has: ${formatCards([dealerCards[0]])} and a mystery card
-You have: ${formatCards(playerCards)} (${HAND_POINTS.player} points)
-  `);
-}
-
-function displayHandAfterHit(cards, play) {
-  if (play === ACTION.hit) {
+function displayPlayerDealerCards(playerCards, dealerCards, play) {
+  if (play === 's') {
     console.log(`
-You hit a ${formatCards([cards[cards.length - 1]])}
-Your hand is now:  ${formatCards(cards)} (${HAND_POINTS.player})
-  `);
+Dealer has: ${formatCards(dealerCards)} (${HAND_POINTS.dealer} points)
+You have: ${formatCards(playerCards)} (${HAND_POINTS.player} points)
+    `);
   } else {
     console.log(`
-Dealer hits a ${formatCards([cards[cards.length - 1]])}
-Dealer hand is now: ${formatCards(cards)}
-      `);
+Dealer has: ${formatCards([dealerCards[0]])} and a mystery card
+You have: ${formatCards(playerCards)} (${HAND_POINTS.player} points)
+    `);
   }
 }
 
@@ -232,6 +222,13 @@ Computer won! :(
   }
 }
 
+function displayTable(playerCards, dealerCards, play) {
+  displayScore();
+  displayFullCards(dealerCards, 'dealer', play);
+  displayPlayerDealerCards(playerCards, dealerCards, play);
+  displayFullCards(playerCards, 'player', play);
+}
+
 function resetScore() {
   SCORE.player = 0;
   SCORE.dealer = 0;
@@ -255,6 +252,7 @@ function playAgain(question) {
 
 do {
   console.clear();
+  readline.question("=> Welcome to Twenty-one, press a key to continue");
   do {
     console.clear();
     displayBanner();
@@ -264,10 +262,7 @@ do {
     let dealerCards = dealTwoCards(deck);
     HAND_POINTS.player = total(playerCards);
     HAND_POINTS.dealer = total(dealerCards);
-    displayScore();
-    displayFullCards(dealerCards, 'dealer');
-    displayPlayerDealerCards(playerCards, dealerCards);
-    displayFullCards(playerCards, 'player');
+    displayTable(playerCards, dealerCards, play);
 
     do {
       play = hitOrStay();
@@ -277,8 +272,7 @@ do {
       if (play === ACTION.hit) {
         playerCards.push(dealOneCard(deck));
         HAND_POINTS.player = total(playerCards);
-        displayHandAfterHit(playerCards, play);
-        displayFullCards(playerCards, 'player');
+        displayTable(playerCards, dealerCards, play);
       }
 
     } while (play === ACTION.hit && !busted(HAND_POINTS.player));
@@ -290,14 +284,13 @@ do {
     while (HAND_POINTS.dealer < DEALER_LIMIT && !busted(HAND_POINTS.player)) {
       dealerCards.push(dealOneCard(deck));
       HAND_POINTS.dealer = total(dealerCards);
-      displayHandAfterHit(dealerCards, play);
-      displayFullCards(dealerCards, 'dealer');
     }
-
-    prompt(`Dealer has a total of ${HAND_POINTS.dealer} points`);
+    console.clear();
+    readline.question("=> Press a key to see the results");
+    console.clear();
     displayResult(HAND_POINTS.player, HAND_POINTS.dealer);
     incrementScore(HAND_POINTS.player, HAND_POINTS.dealer);
-    displayScore();
+    displayTable(playerCards, dealerCards, play);
 
     if (SCORE.player === WINNING_GAMES || SCORE.dealer === WINNING_GAMES) {
       displayOverallwinner();

@@ -1,367 +1,287 @@
-const readline = require('readline-sync');
-const SUIT_NAMES = {
-  H: 'Hearts',
-  D: 'Diamonds',
-  S: 'Spades',
-  C: 'Clubs'
-};
-const CARD_FACE_VALUES = {
-  A: {name: 'Ace', value: 11},
-  K: {name: 'King', value: 10},
-  Q: {name: 'Queen', value: 10},
-  J: {name: 'Jack', value: 10}
-};
-const TARGET_SCORE = 21;
-const PLAY_CHOICES = ['yes', 'y', 'no', 'n'];
-const HIT_OR_STAY = ['hit', 'h', 'stay', 's'];
-const MAX_WINS = 5;
-
-let playerHand = [];
-let dealerHand = [];
-let scores = {
+const READLINE = require("readline-sync");
+const SCORE = {
+  dealer: 0,
   player: 0,
-  dealer: 0
 };
+const ROUNDS = 5;
+const TOTAL_MAX = 21;
+const DEALER_MAX = 17;
 
-function prompt(msg) {
-  console.log('>> ' + msg);
-  return undefined;
-}
 
-function welcomeMsg() {
-  console.log('>'.repeat(12) + ' Welcome To The Twenty-One Card Game! ' + '<'.repeat(12));
-  console.log(' '.repeat(6) + '*'.repeat(50) + ' '.repeat(6));
-  console.log(' '.repeat(12) + '*'.repeat(38) + ' '.repeat(12));
-  console.log(' '.repeat(18) + '*'.repeat(26) + ' '.repeat(18));
-  console.log('>'.repeat(24) + '   Rules   ' + '<'.repeat(27));
-  console.log(`Player vs Dealer, both are dealt a hand of 2-Cards
-On each turn, can choose to either Hit or Stay, add cards to hand or dont
-If when a player hits and the total hand value goes over 21, they bust and lose the round
-At end of round, both players show their hands to see whose total hand value is closer to 21
-21 is the best possible hand, so that will always win the round
-If both players have same total hand value, its a tie and round restarts
-First player to win 5 rounds wins the game!\n`);
-  return undefined;
-}
-
-function playAgain() {
-  prompt('Would you like to play again? (Yes or No)');
-  let answer = readline.question().toLowerCase();
-  while (!PLAY_CHOICES.includes(answer)) {
-    prompt('Invalid input, enter either (Yes or No)');
-    answer = readline.question().toLowerCase();
-  }
-  return (answer === 'yes' || answer === 'y') ? true : false;
-}
-
-function nextRound() {
-  prompt('Move onto next round? (Yes or No)');
-  let answer = readline.question().toLowerCase();
-  while (!PLAY_CHOICES.includes(answer)) {
-    prompt('Invalid answer, please enter either (Yes or No)');
-    answer = readline.question().toLowerCase();
-  }
-  return (answer === 'yes' || answer === 'y') ? true : false;
-}
-
-function startGame() {
-  prompt('Ready to start the game? (Yes or No)');
-  let answer = readline.question().toLowerCase();
-  while (!PLAY_CHOICES.includes(answer)) {
-    prompt('Invalid input, enter either (Yes or No)');
-    answer = readline.question().toLowerCase();
-  }
-  return (answer === 'yes' || answer === 'y') ? true : false;
-}
-
-function shuffle(array) {
-  for (let index = array.length - 1; index > 0; index--) {
-    let otherIndex = Math.floor(Math.random() * (index + 1)); // 0 to index
-    [array[index], array[otherIndex]] = [array[otherIndex], array[index]]; // swap elements
-  }
-  return undefined;
-}
-
-function initializeDeck() {
+function createDeck() {
   let deck = [];
+  let suits = ["Hearts", "Diamonds", "Clubs", "Spades"];
+  let faces = ["Jack", "Queen", "King", "Ace"];
+  let symbols = ["♥", "♦", "♣", "♠"];
+  let card = {};
 
-  for (let key in SUIT_NAMES) {
-    for (let count = 2; count <= 10; count++) {
-      deck.push([key, String(count)]);
+  suits.forEach((suit, index) => {
+    for (let lcv = 2; lcv <= 14; lcv++) {
+      if (lcv <= 10) {
+        card = { suit: suit, face: lcv, symbol: symbols[index], value: lcv};
+        if (lcv < 10) {
+          card.graphic = [
+            [` ┌─────┐ `],
+            [` │${card.value}    │ `],
+            [` │  ${card.symbol}  │ `],
+            [` │    ${card.value}│ `],
+            [` └─────┘ `]];
+        } else {
+          card.graphic = [
+            [` ┌─────┐ `],
+            [` │${card.value}   │ `],
+            [` │  ${card.symbol}  │ `],
+            [` │   ${card.value}│ `],
+            [` └─────┘ `]];
+        }
+      } else if (lcv !== 14) {
+        card = { suit: suit, face: faces[lcv - 11],
+          symbol: symbols[index], value: 10};
+        card.graphic = [
+          [` ┌─────┐ `],
+          [` │${card.face[0]}    │ `],
+          [` │  ${card.symbol}  │ `],
+          [` │    ${card.face[0]}│ `],
+          [` └─────┘ `]];
+      } else {
+        card = { suit: suit, face: faces[3], symbol: symbols[index], value: 11};
+        card.graphic = [
+          [` ┌─────┐ `],
+          [` │${card.face[0]}    │ `],
+          [` │  ${card.symbol}  │ `],
+          [` │    ${card.face[0]}│ `],
+          [` └─────┘ `]];
+      }
+      deck.push(card);
     }
-    for (let face in CARD_FACE_VALUES) {
-      deck.push([key, face]);
-    }
-  }
+  });
 
-  shuffle(deck);
   return deck;
 }
 
-function hitOrStay() {
-  prompt('Player\'s turn: Would you like to Hit or Stay?');
-  let move = readline.question().toLowerCase();
-  while (!HIT_OR_STAY.includes(move)) {
-    prompt('Invalid input, please enter either: Hit or Stay');
-    move = readline.question().toLowerCase();
-  }
-  return (move === 'hit' || move === 'h') ? true : false;
-}
+function displayCards(hand, hideDealerCard = false) {
+  let cardRow;
+  let backside = [
+    [` ┌─────┐ `],
+    [` │░░░░░│ `],
+    [` │░░░░░│ `],
+    [` │░░░░░│ `],
+    [` └─────┘ `]];
 
-function dealCards(shuffDeck, pHand, dHand) {
-  let deckCopy = shuffDeck.slice();
-  let cardIndex = Math.floor(Math.random() * (deckCopy.length + 1));
-
-  for (let fullHand = 2; fullHand > 0; fullHand--) {
-    pHand.push(deckCopy.splice(deckCopy[cardIndex], 1).flat());
-    dHand.push(deckCopy.splice(deckCopy[cardIndex], 1).flat());
-  }
-
-  return undefined;
-}
-
-function dealHitCards(shuffDeck, answer, pHand) {
-  let deckCopy = shuffDeck.slice().filter(card => !pHand.includes(card));
-  let cardIndex = Math.floor(Math.random() * (deckCopy.length + 1));
-
-  shuffle(deckCopy);
-
-  if (answer === true) {
-    pHand.push(deckCopy.splice(deckCopy[cardIndex], 1).flat());
-  }
-
-  return undefined;
-}
-
-function handTotal(hand) {
-  let handTotal = 0;
-
-  hand.forEach(function (card) {
-    for (let key in CARD_FACE_VALUES) {
-      if (parseInt(card[1], 10)) {
-        handTotal += Number(card[1]);
-        break;
-      } else if (card[1] === key) {
-        handTotal += CARD_FACE_VALUES[key].value;
-        break;
+  for (let lcv = 0; lcv < 5; lcv++) {
+    cardRow = " ";
+    for (let inner = 0; inner < hand.length; inner++) {
+      if (hideDealerCard && inner === 1) {
+        cardRow += backside[lcv];
+      } else {
+        cardRow += hand[inner].graphic[lcv];
       }
     }
-  });
-
-  hand.filter(face => face === 'A').forEach(_ => {
-    if (handTotal > TARGET_SCORE) handTotal -= 10;
-  })
-
-  return handTotal;
+    console.log(cardRow);
+  }
 }
 
-function dealerTurn(shuffDeck) {
-  let deckCopy = shuffDeck.slice().filter(card => !dealerHand.includes(card));
-  let cardIndex = Math.floor(Math.random() * (deckCopy.length + 1));
+function shuffleDeck(deck) {
+  let shuffledDeck = [];
 
-  shuffle(deckCopy);
+  for (let lcv = 0; lcv < 52; lcv++) {
+    let randomCard = Math.floor(Math.random() * deck.length);
+    shuffledDeck.push(deck.splice(randomCard, 1));
+  }
 
-  dealerHand.push(deckCopy.splice(deckCopy[cardIndex], 1).flat());
-
-  return undefined;
+  return shuffledDeck;
 }
 
-function resetHands() {
-  playerHand = [];
-  dealerHand = [];
-  return undefined;
+function welcome() {
+  console.clear();
+  console.log("                 WELCOME TO TWENTY ONE                ");
+  console.log("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+  READLINE.question("\nPress Enter To Continue...");
 }
 
-function resetScore() {
-  scores.player = 0;
-  scores.dealer = 0;
-  return undefined;
+function dealCard(deck) {
+  let newCard = deck.pop();
+  return newCard[0];
 }
 
-function displayHands() {
-  let pHand = readCards(playerHand);
-  let dHand = readDealerCards(dealerHand);
-  console.log('Dealer has: ' + dHand);
-  console.log('Player has: ' + pHand + ' --- ' + handTotal(playerHand));
-  return undefined;
+function hit(hand, shuffledDeck) {
+  hand.push(dealCard(shuffledDeck));
 }
 
-function showFullHands() {
-  let pHand = readCards(playerHand);
-  let dHand = readCards(dealerHand);
-  console.log('Dealer has: ' + dHand + ' --- ' + handTotal(dealerHand));
-  console.log('Player has: ' + pHand + ' --- ' + handTotal(playerHand));
-  return undefined;
+function initialDeal(hands, deck) {
+  for (let lcv = 0; lcv < 2; lcv++) {
+    hands.player.push(dealCard(deck));
+    hands.dealer.push(dealCard(deck));
+  }
 }
 
-function readCards(hand) {
-  let cards = [];
+function showBoard(hands, hideDealerCard = false) {
+  console.clear();
+  console.log("                      TWENTY  ONE                     ");
+  console.log("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+  console.log(` Dealer: ${SCORE.dealer}             Best Of 5            Player: ${SCORE.player} `);
+  console.log("──────────────────────────────────────────────────────");
+  console.log(`                DEALER CARDS - Total: ${(hideDealerCard) ? "Unknown" : hands.dealerTotal()}  `);
+  displayCards(hands.dealer, hideDealerCard);
+  console.log("──────────────────────────────────────────────────────");
+  displayCards(hands.player);
+  console.log(`                PLAYER CARDS - Total: ${hands.playerTotal()}  `);
+  console.log("■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■");
+}
 
-  hand.forEach(function (card) {
-    let name = [];
+function compareScore(hands) {
+  if (bust(hands.playerTotal())) {
+    SCORE.dealer++;
+    showBoard(hands);
+    console.log("Player Busts! Dealer Wins!");
+  } else if (bust(hands.dealerTotal())) {
+    SCORE.player++;
+    showBoard(hands);
+    console.log("Dealer Busts! Player Wins!");
+  } else if (hands.playerTotal() > hands.dealerTotal()) {
+    SCORE.player++;
+    showBoard(hands);
+    console.log("Player Wins!");
+  } else if (hands.playerTotal() < hands.dealerTotal()) {
+    SCORE.dealer++;
+    showBoard(hands);
+    console.log("Dealer Wins!");
+  } else {
+    console.log("Tie!");
+  }
+}
 
-    for (let key in CARD_FACE_VALUES) {
-      if (parseInt(card[1], 10)) {
-        name.push(card[1]);
-        break;
-      }
-      if (card[1] === key) {
-        name.push(CARD_FACE_VALUES[key].name);
-        break;
-      }
+function playerHits() {
+  let userChoice = READLINE.question("(h)it or (s)tay: ").toLowerCase();
+  do {
+    if (userChoice === "h" || userChoice === "hit") {
+      return true;
+    } else if (userChoice === "s" || userChoice === "stay") {
+      return false;
+    } else {
+      console.log("Unrecognized Choice. Please Try Again...");
+      userChoice = READLINE.question("(h)it or (s)tay: ").toLowerCase();
     }
-
-    for (let index in SUIT_NAMES) {
-      if (card[0] === index) {
-        name.push(SUIT_NAMES[index]);
-        break;
-      }
-    }
-    cards.push(name.join(' of '));
-  });
-
-  return cards.join(' and ');
+  } while (true);
 }
 
-function readDealerCards(hand) {
-  let cards = readCards(hand).split(' and ');
+function playerTurn(hands, shuffledDeck) {
+  while (!bust(hands.playerTotal())) {
+    showBoard(hands, true);
+    if (playerHits()) {
+      showBoard(hands, true);
+      console.log("Player Hits!");
+      sleep(1250);
+      hit(hands.player, shuffledDeck);
+    } else {
+      showBoard(hands, true);
+      console.log("Player Stays!");
+      sleep(1250);
+      break;
+    }
+  }
+}
 
-  cards = cards.map(function (element, index) {
-    if (index === 0) {
-      return element;
-    } else return 'Unknown Card';
-  });
-
-  return cards.join(' and ');
+function dealerTurn(hands, shuffledDeck) {
+  while (!bust(hands.dealerTotal())) {
+    showBoard(hands);
+    if (hands.dealerTotal() < DEALER_MAX) {
+      console.log("Dealer Hits!");
+      sleep(1250);
+      hit(hands.dealer, shuffledDeck);
+    } else {
+      console.log("Dealer Stays!");
+      sleep(1250);
+      showBoard(hands);
+      break;
+    }
+  }
 }
 
 function bust(hand) {
-  return handTotal(hand) > TARGET_SCORE;
+  return hand > TOTAL_MAX;
 }
 
-function getRoundWinner() {
-  let player = handTotal(playerHand);
-  let dealer = handTotal(dealerHand);
+function sleep (milliseconds) {
+  let date = Date.now();
+  let currentDate;
+  do {
+    currentDate = Date.now();
+  } while (currentDate - date < milliseconds);
+}
 
-  if (player > dealer) {
-    if (player === TARGET_SCORE) {
-      prompt('21! Player Wins Round!');
-      scores.player += 1;
-      showScore();
-    } else {
-      prompt('Player Wins Round!');
-      scores.player += 1;
-      showScore();
-    }
-  } else if (dealer > player) {
-    if (dealer === TARGET_SCORE) {
-      prompt('21! Dealer Wins Round!');
-      scores.dealer += 1;
-      showScore();
-    } else {
-      prompt('Dealer Wins Round!');
-      scores.dealer += 1;
-      showScore();
-    }
+function initializeHands() {
+  let hands = {
+    player: [],
+    dealer: [],
+    calcHandTotal(hand) {
+      let total = 0;
+
+      hand.forEach(card => {
+        total += card.value;
+      });
+
+      hand.filter(card => card.face === "Ace").forEach(_ => {
+        if (total > TOTAL_MAX) total -= 10;
+      });
+
+      return total;
+    },
+    playerTotal() { return this.calcHandTotal(this.player) },
+    dealerTotal() { return this.calcHandTotal(this.dealer) }
+  };
+
+  return hands;
+}
+function gameRound(hands, deck) {
+
+  playerTurn(hands, deck);
+  if (bust(hands.playerTotal())) {
+    return;
   }
-  return undefined;
+  dealerTurn(hands, deck);
 }
 
-function showScore() {
-  prompt('Player Score: ' + scores.player + ' --- Dealer Score: ' + scores.dealer);
-  return undefined;
-}
-
-function gameWinner() {
-  if (scores.player > scores.dealer) {
-    prompt('Player Wins The Game!');
+function nextRound() {
+  let playAgain = "";
+  if (SCORE.player !== ROUNDS && SCORE.dealer !== ROUNDS) {
+    playAgain = READLINE.question("Are you ready for the next round? (y, n): ");
   } else {
-    prompt('Dealer Wins The Game!');
-  }
-  return undefined;
-}
-
-function checkForTie() {
-  return handTotal(playerHand) === handTotal(dealerHand);
-}
-
-function playerTurnLoop(shuffDeck) {
-  let choice;
-  do {
-    choice = hitOrStay();
-    dealHitCards(shuffDeck, choice, playerHand);
-    displayHands();
-  } while (choice === true && !bust(playerHand));
-  return undefined;
-}
-
-function dealerTurnLoop(shuffDeck) {
-  do {
-    dealerTurn(shuffDeck);
-    displayHands();
-  } while (handTotal(dealerHand) < 17);
-  return undefined;
-}
-
-welcomeMsg();
-/// Main Game Loop
-do {
-  if (!startGame()) break;
-
-  while (!(scores.player === MAX_WINS || scores.dealer === MAX_WINS)) {
-    console.clear();
-    prompt('Shuffling deck...');
-    let deck = initializeDeck();
-    resetHands();
-
-    dealCards(deck, playerHand, dealerHand);
-    prompt('Dealing the cards...');
-    displayHands();
-
-    /// Player Turn Loop
-    playerTurnLoop(deck);
-
-    if (bust(playerHand)) {
-      prompt('Player Busts - Dealer Wins Round!');
-      scores.dealer += 1;
-      showScore();
-      if (scores.player === MAX_WINS || scores.dealer === MAX_WINS) continue;
-      else prompt('Next Round...');
-      if (!nextRound()) break;
-      continue;
+    if (SCORE.player === 5) {
+      console.log("PLAYER WINS THE GAME!");
+    } else {
+      console.log("DEALER WINS THE GAME!");
     }
-
-    /// Dealer Turn Loop
-    dealerTurnLoop(deck);
-
-    if (bust(dealerHand)) {
-      prompt('Dealer Busts - Player Wins Round!');
-      scores.player += 1;
-      showScore();
-      if (scores.player === MAX_WINS || scores.dealer === MAX_WINS) continue;
-      else prompt('Next Round...');
-      if (!nextRound()) break;
-      continue;
+    playAgain = READLINE.question("Do you want to play again? (y, n): ");
+    if (playAgain === "y") {
+      SCORE.player = 0;
+      SCORE.dealer = 0;
     }
-
-    prompt('Alright - Time to show hands!');
-    showFullHands();
-    if (checkForTie()) {
-      prompt('Its a tie! restarting round!');
-      if (!nextRound()) break;
-      continue;
-    }
-    getRoundWinner();
-
-    if (scores.player === MAX_WINS || scores.dealer === MAX_WINS) continue;
-    else prompt('Next Round');
-    if (!nextRound()) break;
   }
 
-  prompt('Game Over!');
-  showScore();
-  gameWinner();
-  resetScore();
-} while (playAgain());
+  return playAgain;
+}
 
-prompt('Thanks for stopping by to check out twentyOne.js!');
+function main() {
+  let playAgain;
+  let hands = initializeHands();
+
+  welcome();
+
+  do {
+    hands.player = [];
+    hands.dealer = [];
+    let deck = shuffleDeck(createDeck());
+
+    initialDeal(hands, deck);
+    gameRound(hands, deck);
+    compareScore(hands);
+
+    playAgain = nextRound();
+
+  } while (playAgain === "y");
+
+  console.log("\nThank you for playing!");
+}
+
+main();
