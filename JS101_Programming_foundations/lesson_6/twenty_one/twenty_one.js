@@ -1,9 +1,38 @@
 const readline = require('readline-sync');
 
 const CARD_VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+const TWO_DIGITS_CARD = '10';
+const HONOURS = { J: 10, Q: 10, K: 10, A: 11 };
 const SUITS = ['♠', '♥', '♦', '♣'];
+
 const GAME_BUST = 21;
 const DEALER_LIMIT = 17;
+const WINNING_GAMES = 5;
+const VALID_YES_OR_NO = ['y', 'n', 'yes', 'no'];
+const ACTION = { hit: 'h', stay: 's' };
+const SCORE = { player: 0, dealer: 0 };
+const HAND_POINTS = { player: 0, dealer: 0 };
+
+const MYSTERY_CARD = [
+  `┌────────────┐`,
+  `│ ░░░░░░░░░░ │`,
+  `│ ░░░░░░░░░░ │`,
+  `│ ░░░░░░░░░░ │`,
+  `│ ░░░░░░░░░░ │`,
+  `│ ░░░░░░░░░░ │`,
+  `│ ░░░░░░░░░░ │`,
+  `│ ░░░░░░░░░░ │`,
+  `└────────────┘`,
+  `              `
+];
+
+function displayBanner() {
+  console.log(`
+**************************************************
+             This is TWENTY-ONE!
+**************************************************
+  `);
+}
 
 function prompt(text) {
   console.log(`=> ${text}`);
@@ -44,18 +73,69 @@ function formatCards(cards) {
     .join(' / ');
 }
 
+function displayFullCard(card) {
+  let spacedCard = card.slice();
+
+  if (spacedCard[1] !== TWO_DIGITS_CARD) {
+    spacedCard[1] = " " + spacedCard[1];
+  }
+
+  let cardArray = [
+    `┌────────────┐`,
+    `│ ${spacedCard[1]}         │`,
+    `│            │`,
+    `│            │`,
+    `│     ${spacedCard[0]}      │`,
+    `│            │`,
+    `│            │`,
+    `│         ${spacedCard[1]} │`,
+    `└────────────┘`,
+    `              `
+  ];
+  return (cardArray);
+}
+
+function formatFullCards(cards, who) {
+  let cardsArray;
+  // to display the first hand of the dealer
+  if (cards.length === 2 && who === 'dealer') {
+    cardsArray = [];
+    cardsArray[0] = displayFullCard(cards[0]);
+    cardsArray[1] = MYSTERY_CARD;
+  } else {
+    cardsArray = cards.map(card => displayFullCard(card));
+  }
+
+  // we consolidate all the cards in a single array for display
+  let displayArray = [];
+  if (cardsArray.length === 0) return displayArray;
+
+  cardsArray[0].forEach(_ => displayArray.push([]));
+
+  for (let index = 0; index < cardsArray[0].length; index += 1) {
+    cardsArray.forEach(subArray => displayArray[index].push(subArray[index]));
+  }
+
+  return displayArray.map(subArray => subArray.join(''));
+}
+
+function displayFullCards(cards, who) {
+  let handArray = formatFullCards(cards, who);
+  handArray.forEach(element => console.log(element));
+}
+
 function displayPlayerDealerCards(playerCards, dealerCards) {
   console.log(`
-Dealer has: ${formatCards([dealerCards[dealerCards.length - 1]])} and a mystery card
-You have: ${formatCards(playerCards)}
+Dealer has: ${formatCards([dealerCards[0]])} and a mystery card
+You have: ${formatCards(playerCards)} (${HAND_POINTS.player} points)
   `);
 }
 
 function displayHandAfterHit(cards, play) {
-  if (play === 'h') {
+  if (play === ACTION.hit) {
     console.log(`
 You hit a ${formatCards([cards[cards.length - 1]])}
-Your hand is now:  ${formatCards(cards)}
+Your hand is now:  ${formatCards(cards)} (${HAND_POINTS.player})
   `);
   } else {
     console.log(`
@@ -65,8 +145,8 @@ Dealer hand is now: ${formatCards(cards)}
   }
 }
 
-function busted(totalPlayer) {
-  return totalPlayer > GAME_BUST;
+function busted(pointsPlayer) {
+  return pointsPlayer > GAME_BUST;
 }
 
 function total(cards) {
@@ -74,8 +154,7 @@ function total(cards) {
   let total = 0;
 
   values.forEach(value => {
-    if (value === 'A') total += 11;
-    else if (['J', 'Q', 'K'].includes(value)) total += 10;
+    if (Object.keys(HONOURS).includes(value)) total += HONOURS[value];
     else total += Number(value);
   });
 
@@ -86,55 +165,146 @@ function total(cards) {
   return total;
 }
 
-function displayResult(totalPlayer, totalDealer) {
-  if (totalPlayer > GAME_BUST) prompt('Busted, you lose');
-  else if (totalDealer > GAME_BUST) prompt('Dealer busted, you win');
-  else if (totalDealer < totalPlayer)prompt ('You won');
-  else if (totalDealer > totalPlayer)prompt ('Dealer won');
+function hitOrStay() {
+  let play = null;
+
+  do {
+    play = readline.question('=> Do you (h)it or (s)tay? ').toLowerCase();
+
+    if (!Object.values(ACTION).includes(play)) {
+      prompt("You must enter 'h' or 's'");
+    } else {
+      return play;
+    }
+  } while (!Object.values(ACTION).includes(play));
+
+  return null;
+}
+
+function displayResult(pointsPlayer, pointsDealer) {
+  if (pointsPlayer > GAME_BUST) prompt('Busted, you lose');
+  else if (pointsDealer > GAME_BUST) prompt('Dealer busted, you win');
+  else if (pointsDealer < pointsPlayer) prompt ('You won');
+  else if (pointsDealer > pointsPlayer) prompt ('You lose');
   else prompt("It's a tie");
 }
 
-function playAgain() {
-  let answer = readline.question('=> Do you want to play again (y/n)? ');
-  return answer.toLowerCase()[0] === 'y';
+function detectWinner(pointsPlayer, pointsDealer) {
+  if (pointsPlayer > GAME_BUST) return 'dealer';
+  else if (pointsDealer > GAME_BUST) return 'player';
+  else if (pointsDealer < pointsPlayer) return 'player';
+  else if (pointsDealer > pointsPlayer) return 'dealer';
+  else return null;
+}
+
+function incrementScore(pointsPlayer, pointsDealer) {
+  if (detectWinner(pointsPlayer, pointsDealer) === 'player') {
+    SCORE.player += 1;
+  } else if (detectWinner(pointsPlayer, pointsDealer) === 'dealer') {
+    SCORE.dealer += 1;
+  }
+}
+
+function displayScore() {
+  console.log(`
+  -----------SCOREBOARD-----------
+  Player score: ${SCORE.player}
+  Dealer score: ${SCORE.dealer}
+  --------------------------------
+  `);
+}
+
+function displayOverallwinner() {
+  if (SCORE.player === WINNING_GAMES) {
+    console.log(`
+
+__   __                                _ 
+\\ \\ / /__  _   _  __      _____  _ __ | |
+ \\ V / _ \\| | | | \\ \\ /\\ / / _ \\| '_ \\| |
+  | | (_) | |_| |  \\ V  V / (_) | | | |_|
+  |_|\\___/ \\__,_|   \\_/\\_/ \\___/|_| |_(_)
+
+    `);
+  } else if (SCORE.dealer === WINNING_GAMES) {
+    console.log(`
+Computer won! :(
+    `);
+  }
+}
+
+function resetScore() {
+  SCORE.player = 0;
+  SCORE.dealer = 0;
+}
+
+function playAgain(question) {
+  let answer;
+
+  do {
+    answer = readline.question(question);
+
+    if (!VALID_YES_OR_NO.includes(answer)) {
+      prompt(`You must answer (y)es or (n)o.`);
+    } else {
+      return answer.toLowerCase()[0] === 'y';
+    }
+  } while (!VALID_YES_OR_NO.includes(answer));
+
+  return null;
 }
 
 do {
-  console.clear;
-  prompt(`Welcome to Twenty-One!`);
-  let deck = createShuffledDeck();
-  let play;
-  let playerCards = dealTwoCards(deck);
-  let dealerCards = dealTwoCards(deck);
-  let totalPlayer = total(playerCards);
-  let totalDealer = total(dealerCards);
-  displayPlayerDealerCards(playerCards, dealerCards);
-
+  console.clear();
   do {
+    console.clear();
+    displayBanner();
+    let deck = createShuffledDeck();
+    let play = null;
+    let playerCards = dealTwoCards(deck);
+    let dealerCards = dealTwoCards(deck);
+    HAND_POINTS.player = total(playerCards);
+    HAND_POINTS.dealer = total(dealerCards);
+    displayScore();
+    displayFullCards(dealerCards, 'dealer');
+    displayPlayerDealerCards(playerCards, dealerCards);
+    displayFullCards(playerCards, 'player');
+
     do {
-      play = readline.question('=> Do you (h)it or (s)tay? ').toLowerCase();
+      play = hitOrStay();
+      console.clear();
+      displayBanner();
 
-      if (play !== 'h' && play !== 's') {
-        prompt("You must enter 'h' or 's'");
+      if (play === ACTION.hit) {
+        playerCards.push(dealOneCard(deck));
+        HAND_POINTS.player = total(playerCards);
+        displayHandAfterHit(playerCards, play);
+        displayFullCards(playerCards, 'player');
       }
-    } while (play !== 'h' && play !== 's');
 
-    if (play === 'h') {
-      playerCards.push(dealOneCard(deck));
-      displayHandAfterHit(playerCards, play);
-      totalPlayer = total(playerCards);
+    } while (play === ACTION.hit && !busted(HAND_POINTS.player));
+
+    if (play === ACTION.stay) {
+      prompt(`You stayed at a total of ${HAND_POINTS.player} points.`);
     }
-  } while (play === 'h' && !busted(totalPlayer));
 
-  if (play === 's') {
-    prompt(`You stayed at a total of ${total(playerCards)} points.`);
-  }
+    while (HAND_POINTS.dealer < DEALER_LIMIT && !busted(HAND_POINTS.player)) {
+      dealerCards.push(dealOneCard(deck));
+      HAND_POINTS.dealer = total(dealerCards);
+      displayHandAfterHit(dealerCards, play);
+      displayFullCards(dealerCards, 'dealer');
+    }
 
-  while (totalDealer < DEALER_LIMIT && !busted(totalPlayer)) {
-    dealerCards.push(dealOneCard(deck));
-    displayHandAfterHit(dealerCards, play);
-    totalDealer = total(dealerCards);
-  }
+    prompt(`Dealer has a total of ${HAND_POINTS.dealer} points`);
+    displayResult(HAND_POINTS.player, HAND_POINTS.dealer);
+    incrementScore(HAND_POINTS.player, HAND_POINTS.dealer);
+    displayScore();
 
-  displayResult(totalPlayer, totalDealer);
-} while (playAgain());
+    if (SCORE.player === WINNING_GAMES || SCORE.dealer === WINNING_GAMES) {
+      displayOverallwinner();
+      resetScore();
+      break;
+    }
+
+  } while (playAgain('Do you want to continue (y/n)? '));
+
+} while (playAgain(`Do you want to start a new match (first to ${WINNING_GAMES}) (y/n)? `));
