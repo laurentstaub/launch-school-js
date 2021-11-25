@@ -1,20 +1,43 @@
 /*
 Write a program that prints the longest sentence in a string based on the number of words. Sentences may end with periods (.), exclamation points (!), or question marks (?). You should treat any sequence of characters that are not spaces or sentence-ending characters as a word. Thus, -- should count as a word. Log the longest sentence and its word count to the console. Pay attention to the expected output, and be sure you preserve the punctuation from the end of the sentence. Note that this problem is about manipulating and processing strings. As such, every detail about the string matters (e.g., case, punctuation, tabs, spaces, etc.).
-*/
+*/ 
+function longestSentence(text) {
+  const wordCount = string => string.split(' ').length;
+  let longest = "";
+  let punctuation = text.match(/([.!?])/g);
+  
+  text
+    .split(/([.!?])/)
+    .filter(sentence => sentence.match(/([^\s.!?])/))
+    .map((sentence, index) => sentence.trim() + punctuation[index])
+    .forEach(sentence => {
+      if (wordCount(sentence) > wordCount(longest)) longest = sentence;
+    });
 
-function longestSentence(longText) {
-  let textArray = longText.split(/([.!?])/);
-  let longestString = "";
-
-  textArray.forEach(element => {
-    if (element.length > longestString.length) {
-      longestString = element;
-    }
-  });
-
-  console.log(`${longestString}`);
+  console.log(`${longest}`);
+  console.log(`The longest sentence has ${wordCount(longest)} words.`);
 }
+/*
+function longestSentence(text) {
+  const wordCount = string => string.split(' ').length;
+  let longest = "";
+  let punctuation = text.match(/([.!?])/g);
+  console.log(punctuation);
+  
+  text = text.split(/([.!?])/);
+  console.log(text);
+  text = text.filter(sentence => sentence.match(/([^\s.!?])/));
+  console.log(text);
+  text = text.map((sentence, index) => sentence.trim() + punctuation[index]);
+  console.log(text);
+  text.forEach(sentence => {
+      if (wordCount(sentence) > wordCount(longest)) longest = sentence;
+    });
 
+  console.log(`${longest}`);
+  console.log(`The longest sentence has ${wordCount(longest)} words.`);
+}
+*/
 
 let longText =
   'Four score and seven years ago our fathers brought forth on this ' +
@@ -47,3 +70,4 @@ longestSentence(longText);
 longestSentence(longerText);
 longestSentence("Where do you think you're going? What's up, Doc?");
 longestSentence("To be or not to be! Is that the question?");
+longestSentence("To be! Is that a question?");
