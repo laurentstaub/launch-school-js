@@ -21,15 +21,15 @@ calculate the percentages
 */
 
 function letterPercentages(string) {
-  const toPercent = number => (number / string.length * 100).toFixed(2)
+  const toPercent = number => (number / string.length * 100).toFixed(2);
   let count = { lowercase: 0, uppercase: 0, neither: 0 };
 
   string.split('').forEach(char => {
     if (char.match(/[a-z]/)) count.lowercase += 1;
-    if (char.match(/[A-Z]/)) count.uppercase += 1;
+    else if (char.match(/[A-Z]/)) count.uppercase += 1;
     else count.neither += 1;
   });
-  
+
   Object.keys(count).forEach(key => count[key] = toPercent(count[key]));
 
   return count;
