@@ -1,6 +1,8 @@
 const readline = require('readline-sync');
 const validYes = ['yes', 'y'];
 const validNo = ['no', 'n'];
+const fullStatWeight = 10;
+const halfStatWeight = 5;
 const choices = {
   r: 'rock',
   p: 'paper',
@@ -189,9 +191,9 @@ function lossRates(playHistory) {
 
 function getProbabilityWeights(playRates) {
   for (let play in playRates) {
-    if (playRates[play] === null) playRates[play] = 10;
-    else if (playRates[play] > 0.6 ) playRates[play] = 5;
-    else playRates[play] = 10;
+    if (playRates[play] === null) playRates[play] = fullStatWeight;
+    else if (playRates[play] > 0.6 ) playRates[play] = halfStatWeight;
+    else playRates[play] = fullStatWeight;
   }
 
   return playRates;
