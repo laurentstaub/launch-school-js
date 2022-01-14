@@ -1,4 +1,6 @@
 const readline = require('readline-sync');
+const validYes = ['yes', 'y'];
+const validNo = ['no', 'n'];
 const choices = {
   r: 'rock',
   p: 'paper',
@@ -114,8 +116,8 @@ const RPSGame = {
   playAgain() {
     while (true) {
       let answer = readline.question('Would you like to play again and start a new game? (y/n)\n');
-      if (['yes', 'y'].includes(answer.toLowerCase())) return true;
-      else if (['no', 'n'].includes(answer.toLowerCase())) return false;
+      if (validYes.includes(answer.toLowerCase())) return true;
+      else if (validNo.includes(answer.toLowerCase())) return false;
       else console.log("Please enter 'y' or 'n'.");
     }
   },
@@ -123,8 +125,8 @@ const RPSGame = {
   continueGame() {
     while (true) {
       let answer = readline.question('Would you like to continue? (y/n)\n');
-      if (['yes', 'y'].includes(answer.toLowerCase())) return true;
-      else if (['no', 'n'].includes(answer.toLowerCase())) return false;
+      if (validYes.includes(answer.toLowerCase())) return true;
+      else if (validNo.includes(answer.toLowerCase())) return false;
       else console.log("Please enter 'y' or 'n'.");
     }
   },
