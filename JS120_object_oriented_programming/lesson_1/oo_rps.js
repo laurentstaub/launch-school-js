@@ -114,8 +114,8 @@ const RPSGame = {
   playAgain() {
     while (true) {
       let answer = readline.question('Would you like to play again and start a new game? (y/n)\n');
-      if (['yes', 'y'].includes(answer)) return true;
-      else if (['no', 'n'].includes(answer)) return false;
+      if (['yes', 'y'].includes(answer.toLowerCase())) return true;
+      else if (['no', 'n'].includes(answer.toLowerCase())) return false;
       else console.log("Please enter 'y' or 'n'.");
     }
   },
@@ -123,8 +123,8 @@ const RPSGame = {
   continueGame() {
     while (true) {
       let answer = readline.question('Would you like to continue? (y/n)\n');
-      if (['yes', 'y'].includes(answer)) return true;
-      else if (['no', 'n'].includes(answer)) return false;
+      if (['yes', 'y'].includes(answer.toLowerCase())) return true;
+      else if (['no', 'n'].includes(answer.toLowerCase())) return false;
       else console.log("Please enter 'y' or 'n'.");
     }
   },
@@ -236,6 +236,7 @@ function createHuman() {
 
       while (true) {
         choice = readline.question('Please choose (r)ock, (p)aper, (s)cissors, spoc(k), (l)izard:\n');
+        choice = choice.toLowerCase();
         if (Object.values(choices).includes(choice)
             || Object.keys(choices).includes(choice)) break;
         console.log('Sorry, invalid choice.');
