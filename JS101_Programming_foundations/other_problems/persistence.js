@@ -30,16 +30,16 @@ return counter
     (persistence(999),4);
 */
 
-function persistence(number) {
+function persistence(number) {  // number = 25
   const multiplyElements = array => {
     return array.reduce((acc, nb) => acc * nb, 1);
-  }
-  let counter = 0;
+  }  // return 10
+  let counter = 0;  // counter = 0
 
-  while (String(number).length > 1) {
-    let digitsArray = String(number).split('').map(el => Number(el));
-    number = multiplyElements(digitsArray);
-    counter += 1
+  while (String(number).length > 1) {  // condition is 2
+    let digitsArray = String(number).split('').map(el => Number(el));  // [ 2, 5]
+    number = multiplyElements(digitsArray); // 10
+    counter += 1  // 1
   }
   
   return counter;
