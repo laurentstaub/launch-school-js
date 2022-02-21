@@ -28,8 +28,12 @@ class Square {
 
 class Board {
   constructor() {
+    this.newBoard();
+  }
+
+  newBoard() {
     this.squares = {};
-    for (let counter = 1; counter <= 9; ++counter) {
+    for (let counter = 1; counter <= 9; counter += 1) {
       this.squares[String(counter)] = new Square();
     }
   }
@@ -60,7 +64,11 @@ class Board {
 
   unusedSquares() {
     let keys = Object.keys(this.squares);
-    return keys.filter(key => this.squares[key].isUnused());
+    return keys.filter(key => this.isUnusedSquare(key));
+  }
+
+  isUnusedSquare(key) {
+    return this.squares[key].isUnused();
   }
 
   countMarkersFor(player, keys) {
@@ -118,8 +126,9 @@ class TTTGame {
     if (array.length === 2) return array[0] + " " + word + " " + array[1];
     else {
       let lastIndex = array.length - 1;
-      array[lastIndex] = word + " " + array[lastIndex];
-      return array.join(separator);
+      let arrayCopy = array.slice();
+      arrayCopy[lastIndex] = word + " " + array[lastIndex];
+      return arrayCopy.join(separator);
     }
   }
 
@@ -132,19 +141,24 @@ class TTTGame {
   play() {
     this.displayWelcomeMessage();
 
-    this.board.display();
-    while (true) {
-      this.humanMoves();
-      if (this.gameOver()) break;
+    do {
+      this.board.newBoard();
+      this.board.display();
 
-      this.computerMoves();
-      if (this.gameOver()) break;
-
+      while (true) {
+        this.humanMoves();
+        if (this.gameOver()) break;
+  
+        this.computerMoves();
+        if (this.gameOver()) break;
+  
+        this.board.displayWithClear();
+      }
+  
       this.board.displayWithClear();
-    }
+      this.displayResults();
+    } while (this.playAgain());
 
-    this.board.displayWithClear();
-    this.displayResults();
     this.displayGoodbyeMessage();
   }
 
@@ -168,6 +182,17 @@ class TTTGame {
     }
   }
 
+  playAgain() {
+    let answer;
+    const validAnswers = ["y", "n"];
+    
+    while(!validAnswers.includes(answer)) {
+      answer = readline.question("Play again (enter 'y' for 'yes' or 'n' for 'no'): ");
+    }
+    
+    return answer === 'y';
+  }
+
   humanMoves() {
     let choice;
 
@@ -187,11 +212,13 @@ class TTTGame {
 
   computerMoves() {
     let validChoices = this.board.unusedSquares();
-    let choice;
+    let choice = this.defensiveComputerMove();
 
-    do {
-      choice = Math.floor((9 * Math.random()) + 1).toString();
-    } while (!validChoices.includes(choice));
+    if (!choice) {
+      do {
+        choice = Math.floor((9 * Math.random()) + 1).toString();
+      } while (!validChoices.includes(choice));
+    }
 
     this.board.markSquareAt(choice, this.computer.getMarker());
   }
@@ -208,6 +235,28 @@ class TTTGame {
     return TTTGame.POSSIBLE_WINNING_ROWS.some(row => {
       return this.board.countMarkersFor(player, row) === 3;
     });
+  }
+
+  defensiveComputerMove() {
+    let move = null;
+
+    TTTGame.POSSIBLE_WINNING_ROWS.forEach(row => {
+      if (this.isThreat(row)) {
+        move = this.isThreat(row);
+      }
+    });
+
+    return move;
+  }
+
+  isThreat(row) {
+    if (this.board.countMarkersFor(this.human, row) === 2) {
+      let index = row.findIndex(key => this.board.isUnusedSquare(key));
+      console.log(index);
+      if (index > -1) return row[index];
+    }
+
+    return false;
   }
 }
 
