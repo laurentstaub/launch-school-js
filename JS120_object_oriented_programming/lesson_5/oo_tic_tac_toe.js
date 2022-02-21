@@ -212,8 +212,10 @@ class TTTGame {
 
   computerMoves() {
     let validChoices = this.board.unusedSquares();
-    let choice = this.defensiveComputerMove();
+    let choice = this.winnerComputerMove();
 
+    if (!choice) choice = this.defensiveComputerMove();
+    if (!choice && this.board.isUnusedSquare("5")) choice = "5"; 
     if (!choice) {
       do {
         choice = Math.floor((9 * Math.random()) + 1).toString();
@@ -237,6 +239,27 @@ class TTTGame {
     });
   }
 
+  winnerComputerMove() {
+    let move = null;
+
+    TTTGame.POSSIBLE_WINNING_ROWS.forEach(row => {
+      if (this.isWinnerMove(row)) {
+        move = this.isWinnerMove(row);
+      }
+    });
+
+    return move;
+  }
+
+  isWinnerMove(row) {
+    if (this.board.countMarkersFor(this.computer, row) === 2) {
+      let index = row.findIndex(key => this.board.isUnusedSquare(key));
+      if (index > -1) return row[index];
+    }
+
+    return false;
+  }
+
   defensiveComputerMove() {
     let move = null;
 
@@ -252,7 +275,6 @@ class TTTGame {
   isThreat(row) {
     if (this.board.countMarkersFor(this.human, row) === 2) {
       let index = row.findIndex(key => this.board.isUnusedSquare(key));
-      console.log(index);
       if (index > -1) return row[index];
     }
 
