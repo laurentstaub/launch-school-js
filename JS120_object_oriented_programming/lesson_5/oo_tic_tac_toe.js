@@ -122,14 +122,14 @@ class TTTGame {
   static MATCH_GOAL = 3;
 
   static POSSIBLE_WINNING_ROWS = [
-    [ "1", "2", "3" ],            // top row of board
-    [ "4", "5", "6" ],            // center row of board
-    [ "7", "8", "9" ],            // bottom row of board
-    [ "1", "4", "7" ],            // left column of board
-    [ "2", "5", "8" ],            // middle column of board
-    [ "3", "6", "9" ],            // right column of board
-    [ "1", "5", "9" ],            // diagonal: top-left to bottom-right
-    [ "3", "5", "7" ],            // diagonal: bottom-left to top-right
+    [ "1", "2", "3" ],
+    [ "4", "5", "6" ],
+    [ "7", "8", "9" ],
+    [ "1", "4", "7" ],
+    [ "2", "5", "8" ],
+    [ "3", "6", "9" ],
+    [ "1", "5", "9" ],
+    [ "3", "5", "7" ],
   ];
 
   static joinOr(array, separator = ', ', word = 'or') {
@@ -158,7 +158,7 @@ class TTTGame {
 
   playMatch() {
     console.log(`Match is first player to ${TTTGame.MATCH_GOAL}!`);
-    
+
     while (true) {
       this.playOneGame();
       this.updateMatchScore();
@@ -215,7 +215,7 @@ class TTTGame {
   }
 
   matchOver() {
-    return this.isMatchWinner(this.human) 
+    return this.isMatchWinner(this.human)
            || this.isMatchWinner(this.computer);
   }
 
@@ -248,11 +248,11 @@ class TTTGame {
   playAgain() {
     let answer;
     const validAnswers = ["y", "n"];
-    
-    while(!validAnswers.includes(answer)) {
+
+    while (!validAnswers.includes(answer)) {
       answer = readline.question("Play again (enter 'y' for 'yes' or 'n' for 'no'): ");
     }
-    
+
     return answer === 'y';
   }
 
@@ -286,7 +286,7 @@ class TTTGame {
     let choice = this.winnerComputerMove();
 
     if (!choice) choice = this.defensiveComputerMove();
-    if (!choice && this.board.isUnusedSquare("5")) choice = "5"; 
+    if (!choice && this.board.isUnusedSquare("5")) choice = "5";
     if (!choice) {
       do {
         choice = Math.floor((9 * Math.random()) + 1).toString();
