@@ -90,10 +90,19 @@ class Board {
 class Player {
   constructor(marker) {
     this.marker = marker;
+    this.score = 0;
   }
 
   getMarker() {
     return this.marker;
+  }
+
+  getScore() {
+    return this.score;
+  }
+
+  incrementScore() {
+    this.score += 1;
   }
 }
 
@@ -110,6 +119,8 @@ class Computer extends Player {
 }
 
 class TTTGame {
+  static MATCH_GOAL = 3;
+
   static POSSIBLE_WINNING_ROWS = [
     [ "1", "2", "3" ],            // top row of board
     [ "4", "5", "6" ],            // center row of board
@@ -136,30 +147,51 @@ class TTTGame {
     this.board = new Board();
     this.human = new Human();
     this.computer = new Computer();
+    this.firstPlayer = this.human;
   }
 
   play() {
     this.displayWelcomeMessage();
-
-    do {
-      this.board.newBoard();
-      this.board.display();
-
-      while (true) {
-        this.humanMoves();
-        if (this.gameOver()) break;
-  
-        this.computerMoves();
-        if (this.gameOver()) break;
-  
-        this.board.displayWithClear();
-      }
-  
-      this.board.displayWithClear();
-      this.displayResults();
-    } while (this.playAgain());
-
+    this.playMatch();
     this.displayGoodbyeMessage();
+  }
+
+  playMatch() {
+    console.log(`Match is first player to ${TTTGame.MATCH_GOAL}!`);
+    
+    while (true) {
+      this.playOneGame();
+      this.updateMatchScore();
+      this.displayMatchScore();
+
+      if (this.matchOver()) break;
+      if (!this.playAgain()) break;
+      this.firstPlayer = this.togglePlayer(this.firstPlayer);
+    }
+
+    this.displayMatchResults();
+  }
+
+  togglePlayer(player) {
+    return player === this.human ? this.computer : this.human;
+  }
+
+  playOneGame() {
+    let currentPlayer = this.firstPlayer;
+
+    this.board.newBoard();
+    this.board.display();
+
+    while (true) {
+      this.playerMoves(currentPlayer);
+      if (this.gameOver()) break;
+
+      this.board.displayWithClear();
+      currentPlayer = this.togglePlayer(currentPlayer);
+    }
+
+    this.board.displayWithClear();
+    this.displayResults();
   }
 
   displayWelcomeMessage() {
@@ -182,6 +214,37 @@ class TTTGame {
     }
   }
 
+  matchOver() {
+    return this.isMatchWinner(this.human) 
+           || this.isMatchWinner(this.computer);
+  }
+
+  isMatchWinner(player) {
+    return player.getScore() >= TTTGame.MATCH_GOAL;
+  }
+
+  updateMatchScore() {
+    if (this.isWinner(this.human)) {
+      this.human.incrementScore();
+    } else if (this.isWinner(this.computer)) {
+      this.computer.incrementScore();
+    }
+  }
+
+  displayMatchScore() {
+    let human = this.human.getScore();
+    let computer = this.computer.getScore();
+    console.log(`Current mathch score: [you: ${human}][computer: ${computer}]`);
+  }
+
+  displayMatchResults() {
+    if (this.human.getScore() > this.computer.getScore()) {
+      console.log("You won this match! Congratulations!");
+    } else if (this.human.getScore() < this.computer.getScore()) {
+      console.log("Oh, boo hoo. You lost the match.");
+    }
+  }
+
   playAgain() {
     let answer;
     const validAnswers = ["y", "n"];
@@ -191,6 +254,14 @@ class TTTGame {
     }
     
     return answer === 'y';
+  }
+
+  playerMoves(currentPlayer) {
+    if (currentPlayer === this.human) {
+      this.humanMoves();
+    } else {
+      this.computerMoves();
+    }
   }
 
   humanMoves() {
@@ -240,40 +311,27 @@ class TTTGame {
   }
 
   winnerComputerMove() {
-    let move = null;
-
-    TTTGame.POSSIBLE_WINNING_ROWS.forEach(row => {
-      if (this.isWinnerMove(row)) {
-        move = this.isWinnerMove(row);
-      }
-    });
-
-    return move;
-  }
-
-  isWinnerMove(row) {
-    if (this.board.countMarkersFor(this.computer, row) === 2) {
-      let index = row.findIndex(key => this.board.isUnusedSquare(key));
-      if (index > -1) return row[index];
-    }
-
-    return false;
+    return this.checkRows(this.computer);
   }
 
   defensiveComputerMove() {
+    return this.checkRows(this.human);
+  }
+
+  checkRows(player) {
     let move = null;
 
     TTTGame.POSSIBLE_WINNING_ROWS.forEach(row => {
-      if (this.isThreat(row)) {
-        move = this.isThreat(row);
+      if (this.isLonelySquare(row, player)) {
+        move = this.isLonelySquare(row, player);
       }
     });
 
     return move;
   }
 
-  isThreat(row) {
-    if (this.board.countMarkersFor(this.human, row) === 2) {
+  isLonelySquare(row, player) {
+    if (this.board.countMarkersFor(player, row) === 2) {
       let index = row.findIndex(key => this.board.isUnusedSquare(key));
       if (index > -1) return row[index];
     }
