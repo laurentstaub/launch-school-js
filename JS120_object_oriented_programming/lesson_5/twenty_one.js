@@ -37,6 +37,19 @@ Dealer: hit, stay, deal, bust(state), score(state)
 // const readline = require("readline-sync");
 
 class Card {
+  static HIDDEN_CARD = [
+    `┌─────-──────┐`,
+    `│ ░░░░░░░░░░ │`,
+    `│ ░░░░░░░░░░ │`,
+    `│ ░░░░░░░░░░ │`,
+    `│ ░░░░░░░░░░ │`,
+    `│ ░░░░░░░░░░ │`,
+    `│ ░░░░░░░░░░ │`,
+    `│ ░░░░░░░░░░ │`,
+    `└────────-───┘`,
+    `              `
+  ];
+
   constructor(suit, value) {
     this.suit = suit;
     this.value = value;
@@ -49,6 +62,33 @@ class Card {
 
   show() {
     return this.hidden = false;
+  }
+
+  getValue() {
+    return this.value;
+  }
+
+  createGraphicCard() {
+    let cardArray = [];
+    let VISIBLE_CARD = [
+      `┌───────────┐`,
+      `│ ${this.suit}         │`,
+      `│           │`,
+      `│           │`,
+      `│    ${this.value.length === 1 ? " " + this.value : this.value}     │`,
+      `│           │`,
+      `│           │`,
+      `│         ${this.suit} │`,
+      `└───────────┘`,
+      `              `
+    ];
+
+    if (this.hidden === false) {
+      VISIBLE_CARD.forEach(element => cardArray.push(element));
+    } else {
+      Card.HIDDEN_CARD.forEach(element => cardArray.push(element));
+    }
+    return cardArray;
   }
 }
 
@@ -104,12 +144,12 @@ class Participant {
     this.hand.push(card);
   }
 
-  score() {
+  totalScore() {
     let values = this.hand.map(function(card) {
-      return card[value];
+      return card.getValue();
     });
     let total = 0;
-
+    
     values.forEach(function(value) {
       if (Object.keys(Deck.HONOURS).includes(value)) {
         total += Deck.HONOURS[value];
@@ -129,6 +169,22 @@ class Participant {
 
   resetHand() {
     this.hand = [];
+  }
+
+  displayHand() {
+    let handArray = [];
+    for (let index = 0; index <= 9; index += 1) {
+      handArray.push([]);
+
+      this.hand.forEach(card => {
+        let graphicCard = card.createGraphicCard();
+        handArray[index].push(graphicCard[index]);
+      });
+
+      console.log(handArray[index].join('  '));
+    }
+
+    //console.log(handArray);
   }
 }
 
@@ -173,8 +229,10 @@ class TwentyOneGame {
   }
 
   showCards() {
-    console.log(this.player.hand);
-    console.log(this.dealer.hand);
+    console.log(`Your cards (${this.player.totalScore()}): `);
+    this.player.displayHand();
+    console.log('Dealer cards: ');
+    this.dealer.displayHand();
   }
 
   playerTurn() {

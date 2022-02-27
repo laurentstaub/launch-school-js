@@ -247,13 +247,13 @@ class TTTGame {
 
   playAgain() {
     let answer;
-    const validAnswers = ["y", "n"];
+    const validAnswers = ["y", "n", "yes", "no"];
 
     while (!validAnswers.includes(answer)) {
-      answer = readline.question("Play again (enter 'y' for 'yes' or 'n' for 'no'): ");
+      answer = readline.question("Play again (enter 'y' for 'yes' or 'n' for 'no'): ").toLowerCase();
     }
 
-    return answer === 'y';
+    return answer === 'y' || answer === 'yes';
   }
 
   playerMoves(currentPlayer) {
