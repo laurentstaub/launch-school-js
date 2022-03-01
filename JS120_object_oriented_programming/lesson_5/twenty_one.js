@@ -34,7 +34,7 @@ Dealer: hit, stay, deal, bust(state), score(state)
 
 */
 
-// const readline = require("readline-sync");
+const readline = require("readline-sync");
 
 class Card {
   static HIDDEN_CARD = [
@@ -98,7 +98,7 @@ class Deck {
   static SUITS = ['♠', '♥', '♦', '♣'];
 
   constructor() {
-    this.deck = []; //this.createShuffledDeck();
+    this.deck = [];
     this.createShuffledDeck(this.deck);
   }
 
@@ -183,8 +183,6 @@ class Participant {
 
       console.log(handArray[index].join('  '));
     }
-
-    //console.log(handArray);
   }
 }
 
@@ -210,6 +208,7 @@ class TwentyOneGame {
   start() {
     this.displayWelcomeMessage();
     this.dealCards();
+
     this.showCards();
     this.playerTurn();
     this.dealerTurn();
@@ -236,11 +235,40 @@ class TwentyOneGame {
   }
 
   playerTurn() {
-    //STUB
+    while(this.hitAnswer()) {
+      this.player.addCardToHand(this.deck.deal());
+      this.showCards();
+      if (this.isBusted(this.player)) break;
+    } 
+  }
+
+  hitAnswer() {
+    let answer;
+    let validAnswers = ['h', 'hit', 's', 'stay'];
+
+    while(true) {
+      answer = readline.question('Do you want to (h)it or (s)tay? ').toLowerCase();
+
+      if (validAnswers.includes(answer)) break;
+      else console.log("Please input a valid answer 'h' for 'hit or 's' for stay.");
+    }
+    
+    return answer === 'h' || answer === 'hit';
+  }
+
+  isBusted(participant) {
+    return participant.totalScore() > Participant.BUST_SCORE;
   }
 
   dealerTurn() {
-    //STUB
+    if (this.isBusted(this.player)) return;
+
+    while (this.dealer.totalScore() < 17) {
+      this.dealer.addCardToHand(this.deck.deal());
+    }
+    
+    this.dealer.hand[1].hidden = false;
+    this.showCards();
   }
 
   displayWelcomeMessage() {
@@ -256,7 +284,20 @@ class TwentyOneGame {
   }
 
   displayResult() {
-    //STUB
+    if (this.isBusted(this.player)) console.log('You busted!');
+    else if (this.isBusted(this.dealer)) console.log(('Dealer busted, You win.'));
+    else {
+      let playerScore = this.player.totalScore();
+      let dealerScore = this.dealer.totalScore();
+
+      if (dealerScore > playerScore) {
+        console.log(`Dealer wins with ${this.dealer.totalScore()} points.`);
+      } else if (dealerScore < playerScore) {
+        console.log(`You win with ${this.player.totalScore()} points.`);
+      } else {
+        console.log(`It's a tie.`);
+      }
+    }
   }
 }
 
