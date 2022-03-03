@@ -149,21 +149,21 @@ class Participant {
 }
 
 class Player extends Participant {
-  static moneyStart = 5;
-  static moneyWin = 10;
-  static moneyLost = 0;
+  static MONEY_START = 5;
+  static MONEY_WIN = 10;
+  static MONEY_BROKE = 0;
 
   constructor() {
     super();
-    this.money = Player.moneyStart;
+    this.money = Player.MONEY_START;
   }
 
   isBroke () {
-    return this.money === Player.moneyLost;
+    return this.money === Player.MONEY_BROKE;
   }
 
   isRich () {
-    return this.money === Player.moneyWin;
+    return this.money === Player.MONEY_WIN;
   }
 
   moneyPlusOne() {
@@ -175,7 +175,7 @@ class Player extends Participant {
   }
 
   playableMoney() {
-    return this.money > Player.moneyLost && this.money < Player.moneyWin;
+    return this.money > Player.MONEY_BROKE && this.money < Player.MONEY_WIN;
   }
 
   getMoney() {
@@ -314,9 +314,10 @@ class TwentyOneGame {
   }
 
   displayYoureBroke() {
-    console.log('----------------------');
+    console.log('');
+    console.log('--------------------------------------------------------');
     console.log(`Sorry. You have no money left in the bank. You're broke.`);
-    console.log('----------------------');
+    console.log('--------------------------------------------------------');
     console.log('');
   }
 
