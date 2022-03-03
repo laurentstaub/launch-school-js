@@ -11,7 +11,6 @@ class Card {
     `│ ░░░░░░░░░░ │`,
     `│ ░░░░░░░░░░ │`,
     `└────────-───┘`,
-    `              `
   ];
 
   constructor(suit, value) {
@@ -21,11 +20,11 @@ class Card {
   }
 
   hide() {
-    return this.hidden = true;
+    this.hidden = true;
   }
 
   show() {
-    return this.hidden = false;
+    this.hidden = false;
   }
 
   getValue() {
@@ -44,7 +43,6 @@ class Card {
       `│           │`,
       `│         ${this.suit} │`,
       `└───────────┘`,
-      `              `
     ];
 
     if (this.hidden === false) {
@@ -52,6 +50,7 @@ class Card {
     } else {
       Card.HIDDEN_CARD.forEach(element => cardArray.push(element));
     }
+
     return cardArray;
   }
 }
@@ -110,15 +109,11 @@ class Participant {
 
   totalScore() {
     let values = this.hand
-    .filter(function(card) {
-      return card.hidden === false;
-    })
-    .map(function(card) {
-      return card.getValue();
-    });
+      .filter(function(card) { return card.hidden === false })
+      .map(function(card) { return card.getValue() });
 
     let total = 0;
-    
+
     values.forEach(function(value) {
       if (Object.keys(Deck.HONOURS).includes(value)) {
         total += Deck.HONOURS[value];
@@ -126,9 +121,7 @@ class Participant {
     });
 
     values
-      .filter(function(value) {
-        return value === 'A';
-      })
+      .filter(function(value) { return value === 'A' })
       .forEach(function() {
         if (total > Participant.BUST_SCORE) total -= 10;
       });
@@ -156,8 +149,37 @@ class Participant {
 }
 
 class Player extends Participant {
+  static moneyStart = 5;
+  static moneyWin = 10;
+  static moneyLost = 0;
+
   constructor() {
     super();
+    this.money = Player.moneyStart;
+  }
+
+  isBroke () {
+    return this.money === Player.moneyLost;
+  }
+
+  isRich () {
+    return this.money === Player.moneyWin;
+  }
+
+  moneyPlusOne() {
+    this.money += 1;
+  }
+
+  moneyMinusOne() {
+    this.money -= 1;
+  }
+
+  playableMoney() {
+    return this.money > Player.moneyLost && this.money < Player.moneyWin;
+  }
+
+  getMoney() {
+    return this.money;
   }
 }
 
@@ -176,13 +198,28 @@ class TwentyOneGame {
 
   start() {
     this.displayBanner();
-    this.dealCards();
 
-    this.showCards();
+    while (this.player.playableMoney()) {
+      this.playGame();
+      this.distributeMoney();
+      if (!this.playAgain()) break;
+    }
+
+    if (this.player.isBroke()) {
+      this.displayYoureBroke();
+    } else if (this.player.isRich()) {
+      this.displayYoureRich();
+    }
+
+    this.displayGoodbyeMessage();
+  }
+
+  playGame() {
+    this.dealCards();
+    this.showCardsAndMoney();
     this.playerTurn();
     this.dealerTurn();
     this.displayResult();
-    this.displayGoodbyeMessage();
   }
 
   dealCards() {
@@ -196,6 +233,16 @@ class TwentyOneGame {
     this.dealer.addCardToHand(this.deck.dealHiddenCard());
   }
 
+  showCardsAndMoney() {
+    this.showCards();
+    this.showMoney();
+  }
+
+  showMoney() {
+    console.log(`You have $${this.player.getMoney()} in the bank.`);
+    console.log('');
+  }
+
   showCards() {
     console.clear();
     this.displayBanner();
@@ -206,24 +253,38 @@ class TwentyOneGame {
   }
 
   playerTurn() {
-    while(this.hitAnswer()) {
+    while (this.hitAnswer()) {
       this.player.addCardToHand(this.deck.deal());
-      this.showCards();
+      this.showCardsAndMoney();
       if (this.isBusted(this.player)) break;
-    } 
+    }
+  }
+
+  playAgain() {
+    let answer;
+    let validAnswers = ['y', 'yes', 'n', 'no'];
+
+    while (true) {
+      answer = readline.question("Do you want to keep on playing? (y)es / (n)o: ").toLowerCase();
+
+      if (validAnswers.includes(answer)) break;
+      else console.log("Please input 'y' for 'yes' or 'n' for 'no'");
+    }
+
+    return answer === 'y' || answer === 'yes';
   }
 
   hitAnswer() {
     let answer;
     let validAnswers = ['h', 'hit', 's', 'stay'];
 
-    while(true) {
+    while (true) {
       answer = readline.question('Do you want to (h)it or (s)tay? ').toLowerCase();
 
       if (validAnswers.includes(answer)) break;
-      else console.log("Please input a valid answer 'h' for 'hit or 's' for stay.");
+      else console.log("Please input a valid answer 'h' for 'hit' or 's' for 'stay'.");
     }
-    
+
     return answer === 'h' || answer === 'hit';
   }
 
@@ -233,25 +294,59 @@ class TwentyOneGame {
 
   dealerTurn() {
     if (this.isBusted(this.player)) return;
+    this.dealer.hand[1].hidden = false;
 
     while (this.dealer.totalScore() < 17) {
       this.dealer.addCardToHand(this.deck.deal());
     }
-    
-    this.dealer.hand[1].hidden = false;
-    this.showCards();
+
+    this.showCardsAndMoney();
   }
 
   displayBanner() {
     console.log(`
 **************************************************
+
              This is TWENTY-ONE!
+
 **************************************************
   `);
   }
 
+  displayYoureBroke() {
+    console.log('----------------------');
+    console.log(`Sorry. You have no money left in the bank. You're broke.`);
+    console.log('----------------------');
+    console.log('');
+  }
+
+  displayYoureRich() {
+    console.log('');
+    console.log('-----------------------------------------------------');
+    console.log("You're rich!!! Let's RETIRE on your private island!!!");
+    console.log('-----------------------------------------------------');
+    console.log('');
+  }
+
   displayGoodbyeMessage() {
     console.log(`Thanks for playing Twenty-One!`);
+    console.log('');
+  }
+
+  distributeMoney() {
+    if (this.isBusted(this.player)) this.player.moneyMinusOne();
+    else if (this.isBusted(this.dealer)) this.player.moneyPlusOne();
+    else {
+      let playerScore = this.player.totalScore();
+      let dealerScore = this.dealer.totalScore();
+
+      if (dealerScore > playerScore) {
+        this.player.moneyMinusOne();
+      } else if (dealerScore < playerScore) {
+        this.player.moneyPlusOne();
+      }
+    }
+
     console.log('');
   }
 
