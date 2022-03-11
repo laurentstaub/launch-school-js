@@ -201,8 +201,10 @@ class TwentyOneGame {
 
     while (this.player.playableMoney()) {
       this.playGame();
-      this.distributeMoney();
-      if (!this.playAgain()) break;
+ 
+      if (this.player.isBroke() ||
+          this.player.isRich() ||
+          !this.playAgain()) break;
     }
 
     if (this.player.isBroke()) {
@@ -219,7 +221,9 @@ class TwentyOneGame {
     this.showCardsAndMoney();
     this.playerTurn();
     this.dealerTurn();
-    this.displayResult();
+    let winner = this.determineWinner();
+    this.displayResult(winner);
+    this.distributeMoney(winner);
   }
 
   dealCards() {
@@ -239,7 +243,7 @@ class TwentyOneGame {
   }
 
   showMoney() {
-    console.log(`You have $${this.player.getMoney()} in the bank.`);
+    console.log(`You have $${this.player.getMoney()} in the bank. Bet is $1.`);
     console.log('');
   }
 
@@ -334,34 +338,38 @@ class TwentyOneGame {
     console.log('');
   }
 
-  distributeMoney() {
-    if (this.isBusted(this.player)) this.player.moneyMinusOne();
-    else if (this.isBusted(this.dealer)) this.player.moneyPlusOne();
+  determineWinner() {
+    if (this.isBusted(this.player)) return 'dealer';
+    else if (this.isBusted(this.dealer)) return 'player';
     else {
       let playerScore = this.player.totalScore();
       let dealerScore = this.dealer.totalScore();
 
-      if (dealerScore > playerScore) {
-        this.player.moneyMinusOne();
-      } else if (dealerScore < playerScore) {
-        this.player.moneyPlusOne();
-      }
+      if (dealerScore > playerScore) return 'dealer';
+      else if (dealerScore < playerScore) return 'player';
     }
+  }
 
+  distributeMoney(winner) {
+    if (winner === 'dealer') this.player.moneyMinusOne();
+    else if (winner === 'player') this.player.moneyPlusOne();
     console.log('');
   }
 
-  displayResult() {
-    if (this.isBusted(this.player)) console.log(`You busted (${this.player.totalScore()} points)! Dealer wins!`);
-    else if (this.isBusted(this.dealer)) console.log((`Dealer busted (${this.dealer.totalScore()} points)!, You win.`));
-    else {
-      let playerScore = this.player.totalScore();
-      let dealerScore = this.dealer.totalScore();
-
-      if (dealerScore > playerScore) {
+  displayResult(winner) {
+    if (this.isBusted(this.player)) {
+      console.log(`You busted (${this.player.totalScore()} points)! Dealer wins!`);
+      console.log(`You lost $1. $${this.player.getMoney() - 1} left in the bank.`);
+    } else if (this.isBusted(this.dealer)) {
+      console.log((`Dealer busted (${this.dealer.totalScore()} points)!, You win.`));
+      console.log(`You win $1. $${this.player.getMoney() + 1} in the bank.`);
+    } else {
+      if (winner === 'dealer') {
         console.log(`Dealer wins with ${this.dealer.totalScore()} points.`);
-      } else if (dealerScore < playerScore) {
+        console.log(`You lost $1. $${this.player.getMoney() - 1} left in the bank.`);
+      } else if (winner === 'player') {
         console.log(`You win with ${this.player.totalScore()} points.`);
+        console.log(`You win $1. $${this.player.getMoney() + 1} in the bank.`);
       } else {
         console.log(`It's a tie.`);
       }
