@@ -20,9 +20,10 @@ aHuman.display = function() {
 }
 
 aHuman.display();
-*/
 
-// get set pattern
+const { describe } = require("eslint/lib/rule-tester/rule-tester");
+
+get set pattern
 
 let human = {
   name: "Laurent",
@@ -38,3 +39,70 @@ let human = {
 console.log(human.getAge);
 human.setAge = 44;
 console.log(human.getAge);
+
+// OLOO pattern
+
+let user = {
+  init(firstName, lastName, age) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.age = age;
+    return this;
+  },
+
+  describe() {
+    console.log(`My name is ${this.firstName} ${this.lastName}`);
+  },
+};
+
+let laurent = Object.create(user).init('Laurent', 'Staub', 44);
+laurent.describe();
+
+
+function repeatTwoTimes(func, context) {
+  func.call(context); 
+  func.call(context);
+}
+
+function aGuy() {
+  let john = {
+    firstName: 'John',
+    greetings: function() {
+      console.log('hello, ' + this.firstName);
+    },
+  };
+
+  repeatTwoTimes(john.greetings, john); // Strips context
+}
+
+aGuy();
+
+
+function createGreeter(language) {
+  switch (language) {
+    case 'en':
+      return () => console.log('Hello!');
+    case 'fr':
+      return () => console.log('Bonjour!');
+  }
+}
+
+let greeterFr = createGreeter('fr');
+greeterFr(); // logs 'Bonjour!'
+
+let greeterEn = createGreeter('en');
+greeterEn(); // logs 'Hello!'
+*/
+
+function Rectangle(length, width) {
+  this.length = length;
+  this.width = width;
+}
+
+Rectangle.prototype.getArea = function() {
+  return this.length * this.width;
+};
+
+Rectangle.prototype.toString = function() {
+  
+};

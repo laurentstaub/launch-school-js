@@ -9,12 +9,13 @@ class Cat {
 }
 
 let walkMixin = {
-  walk: function() {
-    console.log("Let's go for a walk!");
-  },
+  walk() {
+    return "Let's go for a walk!";
+  }
 }
 
 Object.assign(Cat.prototype, walkMixin);
+
 let kitty = new Cat("Sophie");
 console.log(kitty.greet());
 console.log(kitty.walk());
