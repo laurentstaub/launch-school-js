@@ -1,3 +1,43 @@
+# The var statement
+The `var` statement looks like the `let`or `const` statements but differs in a few ways.
+
+* `var` creates a property on the global object when defined at the top level
+```js
+var bar = 42;
+console.log(global.bar); // 42
+let foo = 86;
+console.log(global.foo); // undefined
+```
+
+* `var` is function scoped while `let` is block scoped
+```js
+function foo() {
+  if (false) {
+    var a = 1;
+  }
+
+  console.log(a); // undefined
+}
+
+foo();
+```
+
+
+# Rest and spread
+## Rest parameter
+The rest parameter syntax allows a function to accept an indefinite number of arguments as an array.
+
+## Spread syntax
+The spread syntax allows an iterable sucah as an array or string to be expanded in places where zero or more arguments (for function calls) or elements (for arrays) are expected, or an object expression to be expanded in places where zero or more key-value pairs are expected.
+
+```js
+function sum(...args) {
+  return args.reduce((acc, val) => {
+    return acc + val;
+  });
+}
+```
+
 # Garbage collection
 ## Stack and Heap
 Most programming languages divide memory into 2 principal regions: the stack and the heap:
