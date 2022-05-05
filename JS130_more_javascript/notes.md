@@ -296,7 +296,32 @@ function maxItem(first, ...moreArgs) {
 ```
 
 # Modules
-We'll focus on CommonJS modules (Node modules) and JS modules, also known ES modules. Modules are useful to split a program into understandable bits.
+We'll focus on CommonJS modules (Node modules) and JS modules, also known ES modules. Modules are useful to split a program into understandable bits. It also help to keep data private in each module.
+
+## CommonJS Modules
+```js
+function logIt(string) {
+  console.log(string)
+}
+
+module.exports = logIt;
+```
+
+For several items to export
+```js
+module.exports = {
+  logIt,
+  setPrefix,
+}
+```
+
+```js
+const logIt = require("./logit");
+```
+
+```js
+const { logIt, setPrefix } = require("./logit");
+```
 
 # Exceptions
 
