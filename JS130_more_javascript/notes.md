@@ -489,3 +489,23 @@ Main categories of matchers:
 * `toContain`: fails unless the given array includes a value. Also for strings.
 
 [Link to the full list](https://jestjs.io/docs/expect)
+
+## SEAT Approach
+So far, we've repeated over and over the same code. In large projects, we would:
+* Set-up the necessary objects
+* Execute the code against the object we're testing
+* Assert the results of execution
+* Tear down and clean up any lingering artifacts
+
+We can use the `beforeEach` method.
+
+```js
+describe("The Car class", () => {
+  let car;
+  beforeEach(() => {
+    car = new Car();
+  });
+}
+```
+
+We declare the variable `car` outside the beforeEach statement because we want the tests to be able to access it. `beforeEach`is called before each test.
