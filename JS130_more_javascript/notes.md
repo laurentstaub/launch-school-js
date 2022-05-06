@@ -389,6 +389,7 @@ Modern JS uses a mark and sweep algorithm to avoid this kind of problems but it 
 
 
 # Side Effects and Pure Functions
+
 most functions should return a useful value or they should have a side effect, but not both. If you write functions that do both, you may have trouble remembering one of those -- either you'll forget about the side effect, or you'll forget that there's a return value that you need to examine. There are exceptions to the rule about mixing side effects and return values. For instance, if you read something from a database, you almost certainly have to return a value. If you read some input from the user's keyboard, you probably have to return a value. Yet, both operations -- accessing a database and reading user input -- are side effects.
 
 ## Side Effects
@@ -461,3 +462,30 @@ If a function can raise an exception and doesn't catch and handle it, it has a s
 **The consistent return value is possibly the most important feature of pure functions. The fact that the return value is dependent solely on the arguments implies that nothing else in the program can influence the function during the function's lifetime.**
 
 As with side effects, it's common to speak of functions as being pure or impure. However, it's more correct to talk about whether a specific function call is pure or impure.
+
+# Tests
+Why test? At he beginning, we should write tests to avoid **regression**, that is to prevent code that was previously working to stop working.
+
+For jest testing, file needs to end with `.test.js`. It requires a config file: `touch jest.config.js`.
+
+* Test suite: entire set of tests that accompanies the program
+* Test: a specific situation or context that we're attepting to test. Similar to specs
+* Assertion: verification step that confirms that the program does what it should.
+
+**describe**: method that takes a string and a callback. Can contain several test methods.
+**test**: also takes a string and a callback, defines a new test. Within each test, we need to make our own assertions.
+**expect**: assertion starts with the expect method. The first argument of this method is the value we want to assert, the **actual value**. The `expect` method returns an object that has matchers methods. **Matchers** methods compare the actual value passed to `expect` with the expected value. Examples of matchers: `toBe`, `toBeNull`, `toBeLessThan`, `toBeLessTahnOrEqual`, `toMatch`, `not.toMatch`, `toContain`, ...
+
+We can skip tests with the `test.skip` or `xtest` (alias for the `test` method). Useful if we do not want to run a test yet. Skiiped tests appear in yellow.
+
+## Matchers
+Main categories of matchers:
+* `toBe`: fails unless actual value === expected value
+* `toEqual`: same as `toBe` but can also test for object equality
+* `toBeUndefined`: fails unless the actual value is `undefined`. Same as `toBe(undefined)`
+* `toThrow`: fails unless the expression passed in to `expect`raises/throws an error
+* `toBeNull`: fails unless the actual value is `null`. Same as `toBe(null)`.
+* `toBeTruthy`: fails unless the actual value is truthy.
+* `toContain`: fails unless the given array includes a value. Also for strings.
+
+[Link to the full list](https://jestjs.io/docs/expect)
