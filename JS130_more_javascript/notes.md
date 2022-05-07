@@ -509,3 +509,40 @@ describe("The Car class", () => {
 ```
 
 We declare the variable `car` outside the beforeEach statement because we want the tests to be able to access it. `beforeEach`is called before each test.
+
+## Code Coverage
+Calculated on the basis of the number of functions tested.
+```
+jest --coverage todolist.test.js
+```
+
+# The Node Toolbox
+## Setting Up the Project Directory
+The directory name can be pretty much anything but it should only use lowercase letters, digits, underscores and hyphens, to avoid bugs.
+
+* Create directory not under another git directory to avoid conflicts
+* Project is a collection of one or more files used to develop, test, build, and distribute software.
+
+Most Node-based projects follow a standard layout. In particular:
+* Some specific files and directories must be present
+* Some kinds of data must be in specific locations
+* Some data mist use well-defined formats
+
+* Create repo in github
+* Create local directory
+  
+```
+mkdir todolist_project
+cd todolist_project
+```
+* Go back to the github repo and link repo through the Quick setup
+* Add the `node_modules` to the `.gitignore` file
+* Add the necessary files
+
+Node projects typically have a strict organization. Specifically, developers expect to find test code in a test directory and code files in the lib directory. Move the files where they belong:
+```
+mkdir lib test
+mv todolist.js lib
+mv todo.js lib
+mv todolist.test.js test
+```

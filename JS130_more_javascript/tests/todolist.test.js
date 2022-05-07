@@ -94,6 +94,24 @@ describe('TodoList', () => {
     expect(todo3.done).toBe(true);
   });
 
+  test("markAllUndone marks all todos as done", () => {
+    list.markAllDone();
+    list.markAllUndone();
+    expect(todo1.done).toBe(false);
+    expect(todo2.done).toBe(false);
+    expect(todo3.done).toBe(false);
+  });
+
+  test("allDone returns all the done todos", () => {
+    list.markDoneAt(1);
+    expect(list.allDone().toArray()).toEqual([ todo2 ]);
+  });
+
+  test("allNotDone returns all the undone todos", () => {
+    list.markDoneAt(1);
+    expect(list.allNotDone().toArray()).toEqual([ todo1, todo3 ]);
+  });
+
   test("removeAt removes the appropriate todo", () => {
     list.removeAt(2);
     expect(list.toArray()).toEqual([todo1, todo2]);
@@ -140,5 +158,9 @@ describe('TodoList', () => {
       return todo.title === "Clean room";
     });
     expect(filteredList.toArray()).toEqual([todo2])
+  });
+
+  test("findByTitle returns the right to do", () => {
+    expect(list.findByTitle("Buy milk")).toEqual(todo1);
   });
 });
