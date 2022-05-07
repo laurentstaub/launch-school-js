@@ -546,3 +546,184 @@ mv todolist.js lib
 mv todo.js lib
 mv todolist.test.js test
 ```
+
+Make sure the modules imports have the right path name.
+```
+├── lib
+│   ├── todo.js
+│   └── todolist.js
+└── test
+    └── todolist.test.js
+```
+
+## Using npm
+A standard Node installation includes a vast library of code that is always available to your programs. Programming is a repetitive process, which leads to plenty of reusable code in many projects. Thus, developers often package the reusable code and make it available to the broader developer community. The npm database hosts hundreds of thousands of such free code packages. You can download and use these packages in your projects.
+
+### Node Packages
+You can import some packages into your programs, and use others from the terminal command line. You can even use some packages in both ways. The `npm` command, which comes bundled with node, manages your packages. Note that there's a difference in the way we use these packages.
+
+Ex: `eslint`, `jest`, `readline-sync`
+
+### Local vs Global Packages
+Before starting this section, be sure you do not have a node_modules directory, a package.json file, or a package-lock.json file in your home directory. 
+```
+cd $HOME
+rm -fr node_modules package.json package-lock.json
+cd -
+```
+
+To install a package locally, use the npm install command without the --global option.
+```
+# Make sure you're in the todolist_project folder
+npm install lodash --save
+```
+
+This command downloads and installs the lodash package in the node_modules directory. However, where is node_modules located? The npm command looks for an existing directory by that name in the current folder. If it doesn't find one, it looks in the parent directory. If it doesn't find it there, it keeps searching up the directory hierarchy until it finds one. If it doesn't find one, it creates one in the directory where you ran the npm install command. This directory search is why you should never nest your project directory inside a directory that already contains a node_modules directory. 
+
+An npm package is simply a node project with files and sub-directories inside it. We can verify that by listing the contents:
+```
+cd node_modules
+cd lodash
+ls
+```
+
+We import local package through the use of the `require` function.
+```
+const _ = require('lodash');
+console.log(_.chunk([1, 2, 3, 4, 5, 6, 7, 8], 2));
+```
+Or if we just need a specific function
+```
+const chunk = require('lodash/chunk');
+console.log(chunk([1, 2, 3, 4, 5, 6, 7, 8], 2));
+```
+If files are not independent
+```
+const chunk = require('lodash').chunk;
+console.log(chunk([1, 2, 3, 4, 5, 6, 7, 8], 2));
+```
+
+**The package.json and package-lock.json**
+`npm install` isn't the preferred way to install npm packages, especially when a project has multiple contributors or needs to run on different machines. Typically, your project should have a `package.json` file that lists all the packages that your project needs, together with the versions of each package. The file also provides a convenient place to store some other configuration settings.
+
+To initialize (create and populate) a package.json file, we'll run `npm init`. The package.json file is, in effect, a configuration file written in JSON format.
+
+Using `npm install` will install all dependencies from the package.json file. It also creates a package-lock.json file. The package-lock.json file shows the precise versions of the packages that npm installed. It also shows the dependencies of each package and the version of each dependency. Npm and the package.json file follow semantic versioning. For example, in package.json, the versions that we've specified are the major versions, e.g., "4". Node then chooses a specific minor and patch version that is compatible with the rest of the dependencies and adds that information to package-lock.json.
+
+The next time we run npm install it'll look at package-lock.json and install the specific versions specified there. That is why you must add package-lock.json to your git repo. You want all contributors and users of your package to install the correct versions and avoid versioning problems.
+
+**Adding a New Dependency**
+You can add a new dependency to your project and package.json in one of two ways:
+* Directly add the dependency to package.json
+* Use npm install
+
+You don't have to edit package.json directly. Instead, just run npm install with the package name and the --save option to install the package and save it to both package.json and package-lock.json.
+```
+npm install lodash --save
+```
+Or
+```
+npm install lodash -S
+```
+
+**dependencies vs devDependencies**
+Sometimes, your project only needs a package during development. Such packages include code linters, debuggers, and minifiers. These tools aren't part of the final application but are useful or necessary during development. Ideally, you should only install such tools in the development environment, not in production. Fortunately, package.json lets you identify such development dependencies by adding a devDependencies property. The easiest way to do that is to use npm install with the --save-dev option:
+```
+npm install eslint --save-dev
+```
+
+**Running Local Executable Packages**
+Since ESLint is an executable package, we'll run it from the terminal. However, if you try to run eslint filename.js, it will use the globally installed eslint executable. There are several ways to run a local npm executable package, but the simplest way is to precede the executable's name by npx. If it can't find the package (eslint) locally or globally, it downloads and uses a temporary version of the named package.
+
+```
+npx eslint lib/todolist.js
+```
+
+**Deleting a Dependency**
+To delete a dependency, use the npm uninstall command:
+```
+npm uninstall lodash                    remove the package but not in package.json
+npm uninstall lodash --save             remove from the dependencies as well
+npm uninstall eslint --save-dev         remove the devDependencies as well
+```
+
+You can also use npm prune to remove dependencies. This command is useful when you manually remove some dependencies from package.json and want to remove the packages from node_modules. For example, suppose that we edit package.json and delete morgan from the dependencies list, then run npm prune. Since morgan is no longer a dependency, npm prune removes it from node_modules.
+
+As a general rule, you should install almost all of your packages locally in your project's node_modules directory. We recommend this practice highly. It ensures that projects that need specific versions of packages have them locally available. If another project needs a different version of a package, you can install that version in its node_modules directory. Since each package is local to the project, each project is free to use the version it needs.
+
+Not all node packages require local installation. For instance, some packages provide command-line executables, like Heroku (which we'll meet in a later course). You don't often need different versions of Heroku for different projects. Thus, such packages are typically installed as global packages, though you can install them locally.
+
+To install a package globally, use the -g flag with npm install:
+```
+npm install heroku -g
+```
+On UNIX systems, node installs such packages in /usr/local/lib/node or /usr/local/lib/node_modules. Node also moves the heroku executable to a directory that is part of your PATH environment variable. Thus, when you run the heroku command from the command line, the system can find the executable and run it.
+
+Despite the convenience of running commands globally, it can cause problems. For instance, ESLint seems like a good candidate for a global installation. However, the ESLint team doesn't recommend it. If you do install ESLint globally, it may or may not work properly.
+
+## Transpilation: Babel
+Transpilation is the process of converting source code written in one language into another language with a similar level of abstraction to the original code. In the JavaScript world, it often means taking code written in a superset of JavaScript and rewriting it as plain JavaScript. Most often, that means converting code that uses the latest language features to an older version of the language.
+
+Transpilers, such as Babel, let us use the newer features in our code without worrying about whether it works in the intended runtime environment. Since users often don't update their browsers, transpilers are most useful when working with browser-based applications.
+
+To begin, we must install @babel/core and @babel/cli as local packages. Even though Babel is a command-line utility, the Babel docs recommend installing it locally. They've even made it hard to work with a global Babel installation:
+```
+npm install --save-dev @babel/core @babel/cli
+```
+We can now transpile the files in our lib folder:
+```
+npx babel lib --out-dir dist     # Note: that's the npx command, not npm!
+```
+This command tells Babel to transpile all JavaScript files in the lib directory and to output the resulting code to files with the same names in the dist directory. Babel creates a dist directory (if needed), transpiles our todo.js and todolist.js files, and creates two new files with the same name as the source files inside dist. It places the transpiled output in the files created in dist.
+
+First, we need to install the Babel env preset to provide smart transpilation. A preset is a plug-in that has all the information needed to compile one version of JavaScript to another. The env transpiles code to ES5 and automatically detects what it needs to do to support different environments. We can install the env preset with the following command:
+```
+npm install --save-dev @babel/preset-env
+```
+Next, we'll add the --presets option to our babel command. This option tells Babel what presets it should use:
+```
+npx babel lib --out-dir dist --presets=@babel/preset-env
+```
+
+## Automating Tasks with npm Scripts
+Scripts automate repetitive tasks such as building your project, minifying files, and deleting temporary files and folders. There are many ways to write scripts: through shell scripts (e.g., bash and zsh) and task runners like Gulp or Grunt. However, npm scripts provide a simple and versatile way to automate repetitive tasks.
+
+### The Script Object in package.json
+o use npm scripts, you first need to define them in the package.json file with the "scripts" object. The package.json file we built already contains a "scripts" object and a "test" key. The "scripts" object takes a series of key/value pairs in which each key is the name of the script, and the value is the script you want to run.
+
+```
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1", // note the comma
+    "foo": "echo 'How do you do?'"
+  },
+```
+We can see that npm scripts are merely a way to run terminal commands. In effect, running npm run foo is the same as running echo 'How do you do?' directly from the terminal.
+
+In the previous assignment, we used the babel CLI tool to transpile our JavaScript files in the lib folder and add the output files to the dist folder. If you're working on a real project, you need to do that each time you want to test your code. Typing that command with all those options will soon become tiresome. Can we automate that process? Yes, we can. All we have to do is add an npm script to our .package.json file:
+
+```
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "foo": "echo 'How do you do?'", // note the comma
+    "babel": "npx babel lib --out-dir dist --presets=@babel/preset-env"
+  },
+```
+
+We can now transpile our code with the command npm run babel:
+```
+$ npm run babel
+
+> todolist@1.0.0 babel /Users/.../todolist
+> npx babel lib --out-dir dist --presets=@babel/preset-env
+
+Successfully compiled 2 files with Babel.
+```
+One useful feature of npm scripts is that npm knows how to find command-line executables, even those that are part of a local package. It uses commands from local packages in preference to those stored in more traditional locations, such as the directories specified by the PATH environment variable. Thus, you don't need to use the npx command:
+```
+"scripts": {
+  "test": "echo \"Error: no test specified\" && exit 1",
+  "foo": "echo 'How do you do?'",
+  "babel": "babel lib --out-dir dist --presets=@babel/preset-env"
+}
+```
+One significant difference with omitting npx from a script's definition is that npx can search for and install packages for one-time execution. Without npx, you can only use pre-installed packages.
