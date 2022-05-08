@@ -727,3 +727,98 @@ One useful feature of npm scripts is that npm knows how to find command-line exe
 }
 ```
 One significant difference with omitting npx from a script's definition is that npx can search for and install packages for one-time execution. Without npx, you can only use pre-installed packages.
+
+## Packaging the TodoList
+Some things are required to publish a Node.js module:
+1. Create a package.json file.
+2. Provide values for the name, version, and main fields:
+   * name is the name of your package.
+   * version is the initial module version.
+   * main is the name of the file that Node will load when someone imports your package.
+3. Publish your node package.
+
+We can keep the devDepedencies since npm won't install them when installing our package. We also don't need the dependencies in the "dependencies" key. We've only used them to learn about npm. After deleting the dependencies, run npm prune to remove them from node_modules as well.
+
+Next, you should either change the value of the "main" field to one of the files in dist, or create an index.js file in the root directory of your project. Remember that main identifies the file that JavaScript will load when you import the package. We'll create an index.js file and require the files in dist that we need. We'll put the imported modules in an object assigned to module.exports:
+
+```
+module.exports = {
+  TodoList: require('./dist/todolist'),
+  Todo: require('./dist/todo'),
+};
+```
+
+This file requires the Todo and TodoList classes and re-exports them in an enclosing object. Other applications that require our package will import this object.
+
+At this point, our directory looks like this:
+```
+├── dist
+│   ├── todo.js
+│   └── todolist.js
+├── lib
+│   ├── todo.js
+│   └── todolist.js
+├── index.js
+├── node_modules
+├── package-lock.json
+├── package.json
+└── test
+    └── todolist.test.js
+```
+
+The final step you need to take to publish your package is to execute the following command:
+
+```
+npm publish --access public
+```
+
+As you move on, remember the following details:
+* npm provides a library of code that you can download and run, or use directly inside your JavaScript programs. You use the npm command to manage the packages you need.
+* Babel is a JavaScript transpiler that compiles code written with newer syntax into older code. Transpilation is useful when we want to use the latest JavaScript features, but also want our code to run in environments that don't support those features. Typically, that means older browsers. Babel's command-line interface (CLI) works with the Babel core library and the required presets to transpile the latest JavaScript to the desired older version of JavaScript.
+* The package.json file provides a way to list all of your project's dependencies and their versions in a single file. npm uses this file to resolve the interdependencies between all the packages and installs the appropriate versions.
+* npm also provides the mechanisms you need to publish your own modules. Those modules can be packages of code that you require into your JavaScript programs or independent command-line programs. For instance, we require readline-sync in our programs to solicit input from the user, and use the jest command-line program from the jest package.
+
+# Asynchronous Programming
+Asynchronous functions, as opposed to synchronous functions, are functions that don't block execution for the rest of the program while they execute. Said differently, asynchronous functions run concurrently with other operations so that the caller doesn't have to wait for the task to finish running.
+
+## Assignment: Asynchronous Execution with setTimeout
+Much of the code you've seen and written so far runs sequentially within the JavaScript runtime. The browser evaluates each line in this program, one at a time. For each line of code, the next line of code must wait until the current line completes. We call this sequential code since each line runs in sequence. Another term for such code is synchronous code.
+
+Part of what makes JavaScript so useful is that it has first-class functions; functions are a regular data type in the system. First-class functions mean we can write and use functions that accept or return other functions, such as the methods provided by array objects.
+
+It's possible to write code that runs partly now, then pauses and continues to run later after a delay of milliseconds, minutes, hours, or even days. We call such code asynchronous code; it doesn't run continuously or even when the runtime encounters it. To illustrate how asynchronous code works, we need a way to make our code wait and run later.
+
+setTimeout() is one of the simplest ways to run code asynchronously. It takes two arguments: a callback function and the time to delay execution of the callback, in milliseconds (1/1000th of a second or 1 ms). It sets a timer that waits until the specified delay elapses, then invokes the callback.
+
+```js
+setTimeout(function() {  // 1
+  console.log('!');      // 5
+}, 3000);
+
+setTimeout(function() {  // 2
+  console.log('World');  // 4
+}, 1000);
+
+console.log('Hello');    // 3
+```
+
+It's important to realize that there is a period between 3 and 4 and between 4 and 5 where nothing happens! None of this code runs during those gaps. Instead, the JavaScript runtime keeps track of the timers created by setTimeout. Once the delay time elapses, it then invokes the callback function.
+
+```js
+setTimeout(function() {
+  console.log('!');
+}, 0);
+
+setTimeout(function() {
+  console.log('World');
+}, 0);
+
+console.log('Hello');
+```
+
+```
+Hello
+!
+World
+```
+You can't determine whether code is asynchronous merely by looking at it. If it calls any functions, then you must be familiar with the behavior of each of those functions to determine whether any are asynchronous. 
