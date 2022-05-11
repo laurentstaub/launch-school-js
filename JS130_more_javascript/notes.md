@@ -821,4 +821,11 @@ Hello
 !
 World
 ```
-You can't determine whether code is asynchronous merely by looking at it. If it calls any functions, then you must be familiar with the behavior of each of those functions to determine whether any are asynchronous. 
+You can't determine whether code is asynchronous merely by looking at it. If it calls any functions, then you must be familiar with the behavior of each of those functions to determine whether any are asynchronous.
+
+Repeating execution with `setInterval`
+
+```js
+let id = setInterval(function() { console.log("hello"); }, 2000);
+clearInterval(id);
+```
