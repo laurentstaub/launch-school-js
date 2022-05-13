@@ -204,4 +204,110 @@ let countlog = makeCounterLogger(5);
 countlog(8);
 console.log("////////");
 countlog(2);
+
+
+function makeList() {
+  let todoList = [];
+
+  return function(todo) {
+    if (todo === undefined) {
+      if (todoList.length === 0) console.log("The list is empty");
+      else {
+        todoList.forEach(todo => console.log(todo));
+      }
+    } else {
+      if (todoList.includes(todo)) {
+        todoList.splice(todoList.indexOf(todo), 1);
+        console.log(`${todo} removed!`);
+      } else {
+        todoList.push(todo);
+      }
+    }
+  }
+}
+
+let list = makeList();
+list();
+list("Get up!");
+list();
+list("Stand up!");
+list();
+list("Get up!");
+
+
+function makeList() {
+  let todoList = [];
+  
+  return {
+    list() {
+      todoList.forEach(todo => console.log(todo));
+    },
+
+    add(todo) {
+      todoList.push(todo);
+      console.log(`${todo} added`);
+    },
+
+    remove(todo) {
+      todoList.splice(todoList.indexOf(todo), 1);
+      console.log(`${todo} removed!`);
+    },
+  };
+}
+
+let list = makeList();
+list.add("Stand up for your rights");
+list.list();
+list.add("Get up!");
+list.list();
+list.remove("Getup!");
+list.list();
+
+console.log(list.todoList);
+
+
+var sum = 0;
+sum += 10;
+sum += 31;
+
+let numbers = [1, 7, -3, 3];
+
+sum += (function sum(numbers) {
+  return numbers.reduce((sum, number) => {
+    sum += number;
+    return sum;
+  }, 0);
+})(numbers);  // ?
+
+console.log(sum);
+
+
+(function(countFrom) {
+  for (let index = countFrom; index >= 0; index -= 1) {
+    console.log(index);
+  }
+})(7);
+
+
+let bar = (function(start) {
+  let prod = start;
+  return function (factor) {
+    prod *= factor;
+    return prod;
+  };
+})(2);
+
+let result = bar(3);
+result += bar(4);
+result += bar(5);
+console.log(result);
 */
+
+(function countdown(countFrom) {
+  if (countFrom > 0) {
+    console.log(countFrom);
+    countdown(countFrom - 1);
+  } else {
+    console.log(countFrom);
+  }
+})(7);
