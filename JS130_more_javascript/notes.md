@@ -54,10 +54,15 @@ The class name gets hoisted, but the definition of the class does not. Much like
 * Lexical Scope: refers to the lexical structure of the code (inner vs outer scope)
 
 # Strict mode
+
 When to use it:
-* When creating new function in an existing codebase
+* When creating new function in an existing codebase (function level strict mode)
 * When creating a new project / codebase
 
+You cannot create global variables implicitly.
+Functions won't use the global object as their implicit context.
+Forgetting to use this in a method raises an error.
+Leading zeros on numeric integers are illegal.
 
 Strict mode makes three significant changes to JavaScript semantics:
 * It eliminates some silent errors that occur in sloppy mode by changing them to throw errors instead. Silent errors occur when a program does something that is unintended, but continues to run as though nothing is wrong. This can lead to incorrect results or errors much later in execution that are subsequently difficult to track down.
@@ -94,7 +99,56 @@ console.log(bar);
 This behavior also helps identify misspelled names. If you declare a variable with one name, then later try to reassign it with a misspelled name, sloppy mode will create a new global variable.
 
 ## Implicit Context In Functions
+In strict mode, using function call syntax on a method sets this set to undefined. Thus, this.a raises an exception:
 
+```js
+"use strict";
+
+let obj = {
+  a: 5,
+  go() {
+    this.a = 42; // TypeError: Cannot set property 'a' of undefined
+  },
+};
+
+let doIt = obj.go;
+doIt();
+console.log(obj.a); // 5
+```
+
+## Forgetting to Use `this`
+```js
+"use strict";
+
+function Child(age) {
+  this.age = age;
+};
+
+Child.prototype.setAge = function(newAge) {
+  age = newAge; // ReferenceError: age is not defined
+}
+
+let leigh = new Child(5);
+leigh.setAge(6);
+console.log(leigh.age);
+```
+
+## Leading Zeros
+If you use a literal integer that begins with 0 but doesn't contain the digits 8 or 9, sloppy mode JavaScript interprets it as an octal number. This behavior is often undesirable, though its less troublesome now that modern versions of JavaScript default to decimal when using parseInt. In some older versions, parseInt("01234567") would return 342391, which could be a problem if the string came from an external source (such as the keyboard). 
+
+With strict mode, numbers that look like octal numbers raise an error
+
+```js
+"use strict";
+
+console.log(1234567);   // 1234567
+console.log(0);         // This is okay
+console.log(0.123);     // So is this
+console.log(01234567);  // SyntaxError: Octal literals are not allowed in strict mode.
+console.log(01.23);     // SyntaxError: Numbers can't begin with 0
+console.log(-01234567); // SyntaxError: Octal literals are not allowed in strict mode.
+console.log(-089);      // SyntaxError: Numbers can't begin with 0
+```
 
 # Closure
 The variables that the function has access to when it was defined
@@ -156,6 +210,13 @@ function makeAdder(first) {
 }
 
 let addFive = makeAdder(5);
+```
+
+Partial Function Application is sometimes overkill. Rather than creating a makeErrorHandlerFor function, you can use bind to perform partial function application. In most cases, bind is all you need.
+
+```js
+let url = "https://example.com/foo.txt";
+download(url, errorDetected.bind(null, url));
 ```
 
 # Immediatly Invoked Function Expressions
