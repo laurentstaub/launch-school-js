@@ -338,7 +338,7 @@ let { type, age, colors } = qux();
 console.log(type);    // cat
 console.log(age);     // 9
 console.log(colors);  // [ 'black', 'white' ]
-*/
+
 
 function func(first, two, three, four, last) {
   return {
@@ -350,3 +350,11 @@ function func(first, two, three, four, last) {
 
 let array = [1, 2, 3, 4, 5];
 console.log(func(...array));
+*/
+
+//        initial    total    adjustment    bar     result  
+// bar      10        10          na        func      na
+// res      10        8           -2        func      8
+// res(5)   10        13           5        func      21
+// res 3    10        16           3        func      37
+// res -4   10        12          -4        func      49     
