@@ -301,7 +301,7 @@ let result = bar(3);
 result += bar(4);
 result += bar(5);
 console.log(result);
-*/
+
 
 (function countdown(countFrom) {
   if (countFrom > 0) {
@@ -311,3 +311,42 @@ console.log(result);
     console.log(countFrom);
   }
 })(7);
+
+
+function product() {
+  let numbers = Array.from(arguments);
+  return numbers.reduce((total, number) => total * number);
+}
+
+let result = product(2, 3, 4, 5);
+
+
+
+function qux() {
+  let animalType = "cat";
+  let age = 9;
+  let colors = ["black", "white"];
+  // missing code
+  return {
+    type: animalType,
+    age,
+    colors,
+  }
+}
+
+let { type, age, colors } = qux();
+console.log(type);    // cat
+console.log(age);     // 9
+console.log(colors);  // [ 'black', 'white' ]
+*/
+
+function func(first, two, three, four, last) {
+  return {
+    first,
+    last,
+    middle: [two, three, four],
+  }
+}
+
+let array = [1, 2, 3, 4, 5];
+console.log(func(...array));
