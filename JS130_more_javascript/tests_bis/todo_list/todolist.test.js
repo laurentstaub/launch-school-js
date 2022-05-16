@@ -52,5 +52,74 @@ describe('TodoList', () => {
     expect(() => list.add(1)).toThrow(TypeError);
     expect(() => list.add('Hi')).toThrow(TypeError);
   });
+
+  test('itemAt gets the right todo and raises a ReferenceError if we specify an index woth no element', () => {
+    expect(list.itemAt(0)).toEqual(todo1);
+    expect(() => list.itemAt(5)).toThrow(ReferenceError);
+  });
+
+  test('markDoneAt marks the correct to do as done, and raises a ReferenceError if we specify an index with no element', () => {
+    list.markDoneAt(0);
+    expect(list.allDone().toArray()).toEqual([todo1]);
+    expect(() => list.markDoneAt(5)).toThrow(ReferenceError);
+  });
+
+  test('markUndoneAt marks the correct to do as done, and raises a ReferenceError if we specify an index with no element', () => {
+    list.markDoneAt(0);
+    list.markDoneAt(1);
+    list.markUndoneAt(1);
+    expect(list.allDone().toArray()).toEqual([todo1]);
+    expect(() => list.markUndoneAt(5)).toThrow(ReferenceError);
+  });
+
+  test('markAllDone marks all todos as done', () => {
+    list.markAllDone();
+    expect(list.allDone().toArray()).toEqual([todo1, todo2, todo3]);
+  });
+
+  test('removeAt removes the correct todo and raises a ReferenceError if the argument is not a todo', () => {
+    list.removeAt(2);
+    expect(list.toArray()).toEqual([todo1, todo2]);
+    expect(() => list.removeAt(5)).toThrow(ReferenceError);
+  });
+
+  test('toString returns the right representation of the string', () => {
+    let representation = `---- Today's Todos ----
+[ ] Buy milk
+[ ] Clean room
+[ ] Go to the gym`;
+
+    expect(list.toString()).toBe(representation);
+  });
+
+  test('toString returns the right representation of the string when a todo is done', () => {
+    list.markDoneAt(1);
+    let representation = `---- Today's Todos ----
+[ ] Buy milk
+[X] Clean room
+[ ] Go to the gym`;
+
+    expect(list.toString()).toBe(representation);
+  });
+
+  test('toString returns the right representation of the string when all todos are done', () => {
+    list.markAllDone();
+    let representation = `---- Today's Todos ----
+[X] Buy milk
+[X] Clean room
+[X] Go to the gym`;
+
+    expect(list.toString()).toBe(representation);
+  });
+
+  test('forEach iterates over the elements in the list', () => {
+    list.forEach(todo => todo.markDone());
+    expect(list.allDone().toArray()).toEqual([todo1, todo2, todo3]);
+  });
+
+  test('filter returns the correct todos', () => {
+    list.markDoneAt(0);
+    expect(list.filter(todo => todo.isDone()).toArray()).toEqual([todo1]);
+  });
 });
 
