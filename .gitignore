@@ -1,1 +1,4 @@
 *.DS_Store
+
+session-store.db
+node_modules
