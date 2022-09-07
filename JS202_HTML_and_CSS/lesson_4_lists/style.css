@@ -1,0 +1,43 @@
+
+html {
+  font-size: 20px;
+}
+
+ul {
+  list-style-type: none;
+}
+
+ol {
+  list-style-type:upper-roman;
+}
+
+nav ul {
+  background-color: yellow;
+  font-size: 0;
+  list-style-type: none;
+  margin: 0 auto;
+  width: 50%;
+}
+
+nav li {
+  color: blue;
+  display: inline-block;
+  font-size: 1rem;
+  text-align: center;
+  width: 24%;
+}
+
+nav a {
+  box-sizing: border-box;
+  display: inline-block;
+  line-height: 2.5;
+  /* padding: 0; */
+  text-decoration: none;
+  width: 100%;
+}
+
+nav a:hover,
+nav a:focus {
+  background-color: green;
+  color: yellow;
+}

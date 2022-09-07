@@ -1,0 +1,12 @@
+table {
+  background-color: cyan;
+  border-collapse: collapse;
+}
+
+.odd-row {
+  background-color: orange;
+}
+
+.even-row {
+  background-color: yellow;
+}

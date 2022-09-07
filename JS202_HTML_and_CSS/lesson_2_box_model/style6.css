@@ -1,0 +1,19 @@
+div {
+  box-sizing: border-box;
+  display: inline-block;
+  height: 300px;;
+  width: 300px;
+}
+
+#red {
+  background-color: #fcc;
+  border: 20px solid black;
+  margin-right: 20px;
+}
+
+#blue {
+  background-color: #ccf;
+  border-color: black;
+  border-style: solid;
+  border-width: 5px;
+}
