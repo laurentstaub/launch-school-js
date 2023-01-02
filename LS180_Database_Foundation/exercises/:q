@@ -1,0 +1,4 @@
+SELECT customers.id, customers.email, COUNT(tickets.id) AS count FROM tickets 
+LEFT OUTER JOIN customers ON tickets.customer_id = customers.id
+HAVING COUNT(tickets.id) = 3
+GROUP BY customers.id;
